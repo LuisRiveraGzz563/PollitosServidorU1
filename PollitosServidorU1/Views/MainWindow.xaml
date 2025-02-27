@@ -16,11 +16,21 @@
         <ListView ItemsSource="{Binding Pollos}" SelectedItem="{Binding Pollo}">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderBrush="Black" BorderThickness="2" Width="150" Height="70">
+                    <Border BorderBrush="Black" BorderThickness="1" Width="160" Height="80">
                         <StackPanel HorizontalAlignment="Center">
                             <TextBlock FontSize="20" TextAlignment="Center" Text="{Binding Imagen}"/>
                             <TextBlock FontSize="15" Text="{Binding Nombre}" HorizontalAlignment="Center"/>
-                            <TextBlock HorizontalAlignment="Center" Text="{Binding Puntuacion,StringFormat=Puntuacion:0}" FontWeight="Bold"/>
+                            <TextBlock x:Name="Puntuacion" HorizontalAlignment="Center" Text="{Binding Puntuacion}" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Puntuacion}" Value="0">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
                 </DataTemplate>
