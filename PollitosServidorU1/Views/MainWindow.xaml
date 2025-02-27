@@ -1,0 +1,38 @@
+﻿<Window x:Class="PollitosServidorU1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PollitosServidorU1"
+        xmlns:vm="clr-namespace:PollitosServidorU1.ViewModels"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.DataContext>
+        <vm:Corral></vm:Corral>
+    </Window.DataContext>
+
+    <DockPanel>
+        <TextBlock Text="Corral:" DockPanel.Dock="Top" FontSize="20" TextAlignment="Center"></TextBlock>
+        <ListView ItemsSource="{Binding Pollos}" SelectedItem="{Binding Pollo}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="Black" BorderThickness="2" Width="150" Height="70">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock FontSize="20" TextAlignment="Center" Text="{Binding Imagen}"/>
+                            <TextBlock FontSize="15" Text="{Binding Nombre}" HorizontalAlignment="Center"/>
+                            <TextBlock HorizontalAlignment="Center" Text="{Binding Puntuacion,StringFormat=Puntuacion:0}" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+            <!-- Usamos UniformGrid para asegurarnos de que haya 5 pollos por renglón -->
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="5" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
+    </DockPanel>
+    
+</Window>
