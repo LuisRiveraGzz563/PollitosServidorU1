@@ -50,6 +50,40 @@ namespace PollitosServidorU1.ViewModels
                         Imagen = "🌽",
                         Puntuacion = -10,
                     };
+                    generated++;
+                }
+            }
+        }
+
+        // Método para mover el pollito
+        public void MoverPollito(int direccion)
+        {
+            if (Pollo == null) return;
+
+            int nuevaPosicion = Pollo.Posicion;
+
+            switch (direccion)
+            {
+                //Arriba
+                case 1:
+                    if (nuevaPosicion >= Renglones) // Evitar movimiento fuera de los límites
+                        nuevaPosicion -= Renglones; // Subir
+                    break;
+                //Abajo
+                case 2:
+                    if (nuevaPosicion < (TamañoCorral - Renglones)) // Evitar movimiento fuera de los límites
+                        nuevaPosicion += Renglones; // Bajar
+                    break;
+                //izquierda
+                case 3:
+                    if (nuevaPosicion % Columnas != 0) // Evitar movimiento fuera de los límites
+                        nuevaPosicion -= 1; // Mover a la izquierda
+                    break;
+                //derecha
+                case 4:
+                    if (nuevaPosicion % Columnas != (Columnas - 1)) // Evitar movimiento fuera de los límites
+                        nuevaPosicion += 1; // Mover a la derecha
+                    break;
                 }
             }
         }
