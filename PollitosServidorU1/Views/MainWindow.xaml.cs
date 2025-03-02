@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PollitosServidorU1.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,13 @@ namespace PollitosServidorU1
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            var viewModel = (Corral)DataContext; // Obtener el ViewModel de la ventana
+
+            
         }
     }
 }

@@ -1,61 +1,89 @@
-﻿using PollitosServidorU1.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using PollitosServidorU1.Services;
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace PollitosServidorU1.ViewModels
 {
-    public class Corral
+    public partial class Corral : ObservableObject
     {
-        public List<PollitoDTO> Pollos { get; set; } = new List<PollitoDTO>();
-        public PollitoDTO Pollo { get; set; }
+        private readonly string[] Images = new string[2] { "🐥", "🌽" };
+
+        [ObservableProperty]
+        private readonly ObservableCollection<PollitoDTO> Pollos = new ObservableCollection<PollitoDTO>();
+
+        [ObservableProperty]
+        private readonly PollitoDTO Pollo;
+
         public TcpService Servidor { get; set; } = new TcpService();
 
         private readonly int NumMaiz = 5;
+        public int Renglones { get; set; } = 10;
+        public int Columnas { get; set; } = 10;
+        private readonly int TamañoCorral;
         private readonly Random r = new Random();
+
         public Corral()
         {
-            for (int i = 0; i < 25; i++)
+            TamañoCorral = Renglones * Columnas;
+
+            // Inicializar la colección con valores nulos
+            for (int i = 0; i < TamañoCorral; i++)
             {
                 Pollos.Add(null);
             }
-            //Esto muestra un usuario de muestra
-            Pollos[1] = new PollitoDTO
+
+            // Agregar un pollito de prueba
+            Pollo = new PollitoDTO
             {
-                Imagen = "🐥",
+                Imagen = Images[0],
                 Nombre = "Pollito 1",
                 Puntuacion = 0,
-                IP = "192.168.1.1"
+                Ip = "192.168.1.1",
+                Posicion = 1
             };
+
+            Pollos[1] = Pollo;
+
             GenerarMaiz();
 
+            // Suscribir al evento de recepción de pollitos
             Servidor.PollitoRecibido += Servidor_PollitoRecibido;
         }
 
         private void Servidor_PollitoRecibido(PollitoDTO dto)
         {
-            Pollos[dto.Posicion] = dto;
-        }
-
-        //Metodo para generar maiz de manera aleatoria en el corral
-        void GenerarMaiz()
-        {
-            for (int i = 0; i < NumMaiz; i++)
+            if (EsMovimientoValido(dto.Posicion, dto.Direccion))
             {
-                int posicion = r.Next(0, 25);
-                if (Pollos[posicion] == null)
-                {
-                    Pollos[posicion] = new PollitoDTO
-                    {
-                        Imagen = "🌽",
-                        Puntuacion = -10,
-                    };
-                    generated++;
-                }
+                MoverPollito(dto.Direccion);
             }
         }
 
-        // Método para mover el pollito
+        private bool EsMovimientoValido(int posicion, int direccion)
+        {
+            switch (direccion)
+            {
+                case 1:
+                    return posicion >= Columnas; // Arriba
+                case 2:
+                    return posicion < Columnas * (Renglones - 1); // Abajo
+                case 3:
+                    return posicion % Columnas != 0; // Izquierda
+                case 4:
+                    return (posicion + 1) % Columnas != 0; // Derecha
+                default:
+                    return false;
+            }
+        }
+
+        private void GenerarMaiz()
+        {
+            for (int i = 0; i < NumMaiz; i++)
+            {
+                GenerarNuevoMaiz();
+            }
+        }
+
         public void MoverPollito(int direccion)
         {
             if (Pollo == null) return;
@@ -64,28 +92,44 @@ namespace PollitosServidorU1.ViewModels
 
             switch (direccion)
             {
-                //Arriba
-                case 1:
-                    if (nuevaPosicion >= Renglones) // Evitar movimiento fuera de los límites
-                        nuevaPosicion -= Renglones; // Subir
-                    break;
-                //Abajo
-                case 2:
-                    if (nuevaPosicion < (TamañoCorral - Renglones)) // Evitar movimiento fuera de los límites
-                        nuevaPosicion += Renglones; // Bajar
-                    break;
-                //izquierda
-                case 3:
-                    if (nuevaPosicion % Columnas != 0) // Evitar movimiento fuera de los límites
-                        nuevaPosicion -= 1; // Mover a la izquierda
-                    break;
-                //derecha
-                case 4:
-                    if (nuevaPosicion % Columnas != (Columnas - 1)) // Evitar movimiento fuera de los límites
-                        nuevaPosicion += 1; // Mover a la derecha
-                    break;
-                }
+                case 1 when nuevaPosicion >= Columnas: nuevaPosicion -= Columnas; break;
+                case 2 when nuevaPosicion < (TamañoCorral - Columnas): nuevaPosicion += Columnas; break;
+                case 3 when nuevaPosicion % Columnas != 0: nuevaPosicion -= 1; break;
+                case 4 when nuevaPosicion % Columnas != (Columnas - 1): nuevaPosicion += 1; break;
             }
+
+            if (Pollos[nuevaPosicion] != null && Pollos[nuevaPosicion].Puntuacion == -10)
+            {
+                Pollo.Puntuacion++;
+                Pollos[nuevaPosicion] = Pollo;
+                Pollo.Posicion = nuevaPosicion;
+
+                GenerarNuevoMaiz();
+            }
+            else if (Pollos[nuevaPosicion] == null)
+            {
+                Pollos[Pollo.Posicion] = null;
+                Pollos[nuevaPosicion] = Pollo;
+                Pollo.Posicion = nuevaPosicion;
+            }
+
+            OnPropertyChanged(nameof(Pollos));  // Asegurar que la vista se actualice
+        }
+
+        private void GenerarNuevoMaiz()
+        {
+            int nuevaPosicion;
+            do
+            {
+                nuevaPosicion = r.Next(0, TamañoCorral);
+            } while (Pollos[nuevaPosicion] != null);
+
+            Pollos[nuevaPosicion] = new PollitoDTO
+            {
+                Imagen = "🌽",
+                Puntuacion = -10,
+                Posicion = nuevaPosicion
+            };
         }
     }
 }

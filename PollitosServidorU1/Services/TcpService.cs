@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
-using PollitosServidorU1.Models;
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -11,25 +10,38 @@ namespace PollitosServidorU1.Services
 {
     public class TcpService
     {
-        //Creamos un objeto de tipo TcpListener
+        // Usamos ConcurrentBag para manejar clientes en un entorno multihilo de manera eficiente
+        private readonly ConcurrentBag<TcpClient> Clientes = new ConcurrentBag<TcpClient>();
         private readonly TcpListener listener;
-        private readonly List<TcpClient> Clientes = new List<TcpClient>();
         public event Action<PollitoDTO> PollitoRecibido;
+
         public TcpService()
         {
-            //Inicializamos el objeto listener con la IP Any y el puerto 5000
+            // Inicializamos el objeto listener con la IP Any y el puerto 5000
             listener = new TcpListener(IPAddress.Any, 5000);
-            //Iniciamos el listener
             listener.Start();
-            //Recibimos clientes
-            RecibirClientes();
+
+            // Recibimos clientes en un hilo aparte
+            Thread recibirClientes = new Thread(RecibirClientes) { IsBackground = true };
+            recibirClientes.Start();
         }
 
         private void RecibirClientes()
         {
-            TcpClient tcpClient = listener.AcceptTcpClient();
-            //Crear un hilo para escuchar a los clientes
-            Thread t = new Thread(Escuchar);
+            while (true)
+            {
+                // Aceptamos clientes TCP
+                TcpClient tcpClient = listener.AcceptTcpClient();
+                // Agregamos el cliente a la lista de clientes
+                Clientes.Add(tcpClient);
+                // Creamos un hilo para escuchar a los clientes
+                Thread t = new Thread(Escuchar) 
+                {
+                    IsBackground = true
+                };
+                t.Start(tcpClient);
+                Thread.Sleep(1000);
+            }
         }
 
         private void Escuchar(object tcpClient)
@@ -37,41 +49,51 @@ namespace PollitosServidorU1.Services
             if (tcpClient != null)
             {
                 var client = (TcpClient)tcpClient;
-                //Agregamos el cliente a la lista de clientes
-                Clientes.Add(client);
-                while (client.Connected)
+                var stream = client.GetStream();
+                try
                 {
-                    if (client.Available > 0)
+                    while (client.Connected)
                     {
-                        //Creamos un buffer para recibir los datos
-                        byte[] buffer = new byte[client.Available];
-                        //Leemos los datos del cliente y guardar los datos en el buffer
-                        client.GetStream().Read(buffer, 0, buffer.Length);
-                        //Convertimos los datos a string
-                        var json = Encoding.UTF8.GetString(buffer);
-                        //Convertimos el json a un objeto
-                        var pollito = JsonConvert.DeserializeObject<PollitoDTO>(json);
-
-                        if (pollito != null)
+                        if (stream.DataAvailable)
                         {
-                            //Invocamos el evento PollitoRecibido
-                            PollitoRecibido?.Invoke(pollito);
+                            byte[] buffer = new byte[client.Available];
+                            stream.Read(buffer, 0, buffer.Length);
+                            var json = Encoding.UTF8.GetString(buffer);
+
                             try
                             {
-                                //Enviamos la lista de clientes a todos los clientes
-                                foreach (var c in Clientes)
+                                // Deserializamos el JSON a un objeto PollitoDTO
+                                var pollito = JsonConvert.DeserializeObject<PollitoDTO>(json);
+                                if (pollito != null)
                                 {
-                                    c?.Client.Send(buffer);
+                                    PollitoRecibido?.Invoke(pollito);
+                                    // Enviamos los datos a todos los clientes conectados
+                                    foreach (var c in Clientes)
+                                    {
+                                        // Verificamos si el cliente está conectado antes de enviarle datos
+                                        if (c.Connected)
+                                        {
+                                            c.GetStream().Write(buffer, 0, buffer.Length);
+                                        }
+                                    }
                                 }
                             }
-                            catch (Exception)
+                            catch (JsonException ex)
                             {
-                                //Si hay un error, eliminamos el cliente de la lista
-                                Clientes.Remove(client);
+                                Console.WriteLine($"Error de deserialización: {ex.Message}");
                             }
                         }
                     }
-                    Thread.Sleep(1000);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error en la conexión con el cliente: {ex.Message}");
+                }
+                finally
+                {
+                    // Cuando termina la comunicación con el cliente, lo eliminamos de la lista
+                    client.Close();
+                    Clientes.TryTake(out var removedClient);  // Elimina el cliente de la lista concurrente
                 }
             }
         }
