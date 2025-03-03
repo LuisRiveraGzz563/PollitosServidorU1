@@ -3,20 +3,14 @@
 public partial class PollitoDTO : ObservableObject
 {
     [ObservableProperty]
-    public string Imagen { get; set; }
-
+    public string Nombre;
     [ObservableProperty]
-    public string Nombre { get; set; }
-
+    public int Puntuacion;   
     [ObservableProperty]
-    public int Puntuacion { get; set; }
-
+    public string Imagen;
     [ObservableProperty]
-    public string Ip { get; set; }
+    public int Posicion;
 
-    [ObservableProperty]
-    public int Posicion { get; set; }
-
-    [ObservableProperty]
-    public int Direccion { get; set; }
+    public string Cliente;
+    public int Direccion;
 }

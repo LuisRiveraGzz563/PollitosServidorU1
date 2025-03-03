@@ -6,13 +6,12 @@
         xmlns:local="clr-namespace:PollitosServidorU1"
         xmlns:vm="clr-namespace:PollitosServidorU1.ViewModels"
         xmlns:models="clr-namespace:PollitosServidorU1.Models" 
-        d:DataContext="{d:DesignInstance Type=models:PollitoDTO}"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="1250"
         KeyDown="Window_KeyDown"
         >
     <Window.DataContext>
-        <vm:Corral></vm:Corral>
+        <vm:CorralViewModel></vm:CorralViewModel>
     </Window.DataContext>
 
     <DockPanel>

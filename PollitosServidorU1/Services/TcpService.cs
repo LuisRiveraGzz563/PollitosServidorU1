@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -11,7 +11,7 @@ namespace PollitosServidorU1.Services
     public class TcpService
     {
         // Usamos ConcurrentBag para manejar clientes en un entorno multihilo de manera eficiente
-        private readonly ConcurrentBag<TcpClient> Clientes = new ConcurrentBag<TcpClient>();
+        private readonly List<TcpClient> Clientes = new List<TcpClient>();
         private readonly TcpListener listener;
         public event Action<PollitoDTO> PollitoRecibido;
 
@@ -35,7 +35,7 @@ namespace PollitosServidorU1.Services
                 // Agregamos el cliente a la lista de clientes
                 Clientes.Add(tcpClient);
                 // Creamos un hilo para escuchar a los clientes
-                Thread t = new Thread(Escuchar) 
+                Thread t = new Thread(Escuchar)
                 {
                     IsBackground = true
                 };
@@ -67,15 +67,6 @@ namespace PollitosServidorU1.Services
                                 if (pollito != null)
                                 {
                                     PollitoRecibido?.Invoke(pollito);
-                                    // Enviamos los datos a todos los clientes conectados
-                                    foreach (var c in Clientes)
-                                    {
-                                        // Verificamos si el cliente está conectado antes de enviarle datos
-                                        if (c.Connected)
-                                        {
-                                            c.GetStream().Write(buffer, 0, buffer.Length);
-                                        }
-                                    }
                                 }
                             }
                             catch (JsonException ex)
@@ -93,7 +84,27 @@ namespace PollitosServidorU1.Services
                 {
                     // Cuando termina la comunicación con el cliente, lo eliminamos de la lista
                     client.Close();
-                    Clientes.TryTake(out var removedClient);  // Elimina el cliente de la lista concurrente
+                    Clientes.Remove(client);  // Elimina el cliente de la lista concurrente
+                }
+            }
+        }
+
+        //Metodo para enviar la lista de pollitos a los clientes
+        public void Retransmitir(List<PollitoDTO> lista)
+        {
+            // Recorremos la lista de pollitos
+            for (int i = 0; i < lista.Count; i++)
+            {
+                // Obtenemos el cliente correspondiente al pollito
+                var client = Clientes.Find(c => c.Client.RemoteEndPoint.ToString() == lista[i].Cliente);
+                // Si el cliente está conectado
+                if (client != null && client.Connected)
+                {
+                    // Obtenemos el stream de red del cliente
+                    var stream = client.GetStream();
+                    // Enviamos el mensaje a través del stream
+                    byte[] buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(lista[i]));
+                    stream.Write(buffer, 0, buffer.Length);
                 }
             }
         }

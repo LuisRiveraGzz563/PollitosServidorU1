@@ -96,7 +96,8 @@
     </Compile>
     <Compile Include="Models\PollitoDTO.cs" />
     <Compile Include="Services\TcpService.cs" />
-    <Compile Include="ViewModels\Corral.cs" />
+    <Compile Include="Models\Corral.cs" />
+    <Compile Include="ViewModels\CorralViewModel.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
