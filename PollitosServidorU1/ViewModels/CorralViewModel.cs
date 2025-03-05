@@ -19,7 +19,6 @@ namespace PollitosServidorU1.ViewModels
         {
             Corral = new Corral(TamañoCorral);
             GenerarMaiz();
-
             // Suscribir al evento de recepción de pollitos
             Servidor.PollitoRecibido += Servidor_PollitoRecibido;
         }
@@ -27,9 +26,9 @@ namespace PollitosServidorU1.ViewModels
         private void Servidor_PollitoRecibido(PollitoDTO dto)
         {
             //1.- Verificar si la persona esta en el tablero
-            var personaEnTablero = Corral.Pollos.FirstOrDefault(x => x != null && x.Cliente == dto.Cliente);
+            var polloEnTablero = Corral.Pollos.FirstOrDefault(x => x != null && x.Cliente == dto.Cliente);
             //Si no esta: agregarlo en la primera posicion disponible
-            if (personaEnTablero == null)
+            if (polloEnTablero == null)
             {
                 //Si la posicion esta vacia
                 if (Corral.Pollos[dto.Posicion] == null)
@@ -39,7 +38,7 @@ namespace PollitosServidorU1.ViewModels
                 }
                 else
                 {
-                    // Recorrer el tablero para encontrar una casilla vacia
+                    // Recorrer el corral para encontrar una casilla vacia
                     for (int i = 0; i < Corral.Pollos.Count; i++)
                     {
                         //Si la casilla esta vacia

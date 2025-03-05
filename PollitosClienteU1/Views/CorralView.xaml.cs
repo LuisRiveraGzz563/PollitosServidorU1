@@ -1,5 +1,4 @@
-﻿using PollitosServidorU1.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,20 +13,16 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace PollitosServidorU1
+namespace PollitosClienteU1.Views
 {
     /// <summary>
-    /// Lógica de interacción para MainWindow.xaml
+    /// Lógica de interacción para CorralView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class CorralView : UserControl
     {
-        public MainWindow()
+        public CorralView()
         {
             InitializeComponent();
-        }
-
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
         }
     }
 }

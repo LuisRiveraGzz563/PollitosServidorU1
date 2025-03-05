@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Windows;
 
 namespace PollitosServidorU1.Services
 {
@@ -14,7 +15,7 @@ namespace PollitosServidorU1.Services
         private readonly List<TcpClient> Clientes = new List<TcpClient>();
         private readonly TcpListener listener;
         public event Action<PollitoDTO> PollitoRecibido;
-
+        public event Action<string> ClienteDesconectado;
         public TcpService()
         {
             // Inicializamos el objeto listener con la IP Any y el puerto 5000
@@ -89,6 +90,36 @@ namespace PollitosServidorU1.Services
             }
         }
 
+        //Metodo para enviar la lista de pollitos a los clientes
+        public void Retransmitir(PollitoDTO pollo)
+        {
+            // Serializar el objeto
+            byte[] buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(pollo));
+            // Recorremos la lista de clientes
+            foreach (var c in Clientes)
+            {
+                try
+                {
+                    if (c.Connected)
+                    {
+                        c.Client.Send( buffer);
+                    }
+                }
+                catch (Exception)
+                {
+                    if (c.Client != null && c.Client.RemoteEndPoint != null)
+                    {
+                        //Notificar al viewmodel para que lo quite de la vista
+                        ClienteDesconectado?.Invoke(c.Client.RemoteEndPoint.ToString());
+                        //Cerrar la conexion con el cliente
+                        c.Client.Close();
+                        //lo mejor seria tratar de reconectar el cliente,
+                        //pero por simplicidad se elimina
+                        Clientes.Remove(c);
+                    }
+                }
+            }
+        }
         //Metodo para enviar la lista de pollitos a los clientes
         public void Retransmitir(List<PollitoDTO> lista)
         {

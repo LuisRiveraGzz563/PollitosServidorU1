@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="PollitosServidorU1.Views.CorralView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PollitosServidorU1.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <DockPanel>
+        <TextBlock Text="Corral:" DockPanel.Dock="Top" FontSize="12" TextAlignment="Center" />
+        <ListView ItemsSource="{Binding Pollos}" SelectedItem="{Binding Pollo}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="Black" BorderThickness="1" Width="50" Height="50" Margin="-2">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock FontSize="14" Text="{Binding Nombre}" HorizontalAlignment="Center" />
+                            <TextBlock FontSize="10" TextAlignment="Center" Text="{Binding Imagen}" />
+                            <TextBlock x:Name="Puntuacion" HorizontalAlignment="Center" Text="{Binding Puntuacion}" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Puntuacion}" Value="-10">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+            <!-- Usamos UniformGrid para asegurarnos de que haya 5 pollos por renglón -->
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="{Binding Renglones}" Rows="{Binding Columnas}"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
+    </DockPanel>
+</UserControl>
