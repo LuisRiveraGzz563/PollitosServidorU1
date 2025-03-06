@@ -33,6 +33,7 @@ namespace PollitosClienteU1.ViewModels
         public int Renglones { get; set; } = 10;
         private int Tamaño => Columnas * Renglones;
         public Corral Corral { get; set; }
+        
         private void Servidor_ListaRecibida(List<PollitoDTO> lista)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -40,11 +41,25 @@ namespace PollitosClienteU1.ViewModels
                 for (int i = 0; i < lista.Count; i++)
                 {
                     var anterior = Corral.Pollos.FirstOrDefault(x =>
-                    x != null && x.Cliente == lista[i].Cliente && x.Puntuacion == lista[i].Puntuacion);
+                    x != null && x.Cliente == lista[i].Cliente && x.Posicion == lista[i].Posicion);
 
                     //Si no esta en pantalla
                     if(anterior == null)
                     {
+                        if (Corral.Pollos[lista[i].Posicion] != null)
+                        {
+                            foreach (var item in Corral.Pollos)
+                            {
+                                if (item == null)
+                                {
+                                    // Agregarlo al corral
+                                    lista[i].Posicion = Corral.Pollos.IndexOf(item);
+                                    // Agregarlo al corral
+                                    Corral.Pollos[lista[i].Posicion] = lista[i];
+                                    break;
+                                }
+                            }
+                        }
                         // Agregarlo al corral
                         Corral.Pollos[lista[i].Posicion] = lista[i];
                     }
