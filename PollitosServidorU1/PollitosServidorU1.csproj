@@ -86,10 +86,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="Views\CorralView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -102,9 +98,6 @@
     <Compile Include="Services\TcpService.cs" />
     <Compile Include="Models\Corral.cs" />
     <Compile Include="ViewModels\CorralViewModel.cs" />
-    <Compile Include="Views\CorralView.xaml.cs">
-      <DependentUpon>CorralView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

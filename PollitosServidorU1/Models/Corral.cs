@@ -9,9 +9,9 @@ namespace PollitosServidorU1.Models
     {
         
         [ObservableProperty]
-        public readonly ObservableCollection<PollitoDTO> Pollos = new ObservableCollection<PollitoDTO>();
+        public ObservableCollection<PollitoDTO> Pollos { get; set; } = new ObservableCollection<PollitoDTO>();
         [ObservableProperty]
-        public PollitoDTO Pollito = new PollitoDTO();
+        public PollitoDTO Pollito { get; set; } = new PollitoDTO();
         public Corral(int TamañoCorral)
         {
             // Inicializar la colección con valores nulos

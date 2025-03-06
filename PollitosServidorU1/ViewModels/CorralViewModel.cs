@@ -11,7 +11,7 @@ namespace PollitosServidorU1.ViewModels
 
         public int Columnas = 10, Renglones = 10 ,NumMaiz = 5;
         public int TamañoCorral => Columnas * Renglones;
-        private readonly Corral Corral;
+        public  Corral Corral { get; set; }
         private static readonly TcpService Servidor = new TcpService();
         Random r = new Random();
 

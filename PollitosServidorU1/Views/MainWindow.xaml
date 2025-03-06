@@ -5,8 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PollitosServidorU1"
         xmlns:vm="clr-namespace:PollitosServidorU1.ViewModels"
-        xmlns:models="clr-namespace:PollitosServidorU1.Models"
-        xmlns:views="clr-namespace:PollitosServidorU1.Views"
+        xmlns:models="clr-namespace:PollitosServidorU1.Models" 
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="1250"
         >
@@ -14,15 +13,37 @@
         <vm:CorralViewModel></vm:CorralViewModel>
     </Window.DataContext>
     
-    <Window.Resources>
-        <views:CorralView x:Key="Corral"></views:CorralView>
-    </Window.Resources>
-    
-    <ContentControl>
-        <ContentControl.Style>
-            <Style TargetType="ContentControl">
-                <Setter Property="Content" Value="{StaticResource Corral}"></Setter>
-            </Style>
-        </ContentControl.Style>
-    </ContentControl>
+    <DockPanel>
+        <TextBlock Text="Corral:" DockPanel.Dock="Top" FontSize="12" TextAlignment="Center" />
+        <ListView ItemsSource="{Binding Corral.Pollos}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="Black" BorderThickness="1" Width="50" Height="50" Margin="-2">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock FontSize="14" Text="{Binding Cliente}" HorizontalAlignment="Center" />
+                            <TextBlock FontSize="10" TextAlignment="Center" Text="{Binding Imagen}" />
+                            <TextBlock x:Name="Puntuacion" HorizontalAlignment="Center" Text="{Binding Puntuacion}" FontWeight="Bold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Puntuacion}" Value="-10">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+            <!-- Usamos UniformGrid para asegurarnos de que haya 5 pollos por renglón -->
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="{Binding Renglones}" Rows="{Binding Columnas}"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+        </ListView>
+    </DockPanel>
 </Window>

@@ -12,13 +12,14 @@ namespace PollitosClienteU1.ViewModels
 
         private readonly TcpService Servidor = new TcpService();
         public bool IsConnected { get; set; } = false;
+        public string Nombre { get; set; }
         public string IP { get; set; }
         public ICommand ConectarCommand { get; set; }
 
         public MainViewModel()
         {
             ConectarCommand = new RelayCommand(Conectar);
-            Servidor.
+            
         }
 
         //Metodo para conectar el cliente con el servidor
