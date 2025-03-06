@@ -32,9 +32,9 @@
                 </Style>
             </StackPanel.Resources>
             <TextBlock Text="Nombre de Usuario:"/>
-            <TextBox Text="{Binding Nombre}"></TextBox>
+            <TextBox Text="{Binding Conexion.Nombre}"></TextBox>
             <TextBlock Text="IP del servidor:"/>
-            <TextBox Text="{Binding IP}"></TextBox>
+            <TextBox Text="{Binding Conexion.IP}"></TextBox>
             <Border>
                 <Button Content="Conectar" Command="{Binding ConectarCommand}"></Button>
             </Border>

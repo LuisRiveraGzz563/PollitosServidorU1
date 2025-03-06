@@ -1,16 +1,19 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Windows;
 
 namespace PollitosServidorU1.Services
 {
     public class TcpService
     {
-        // Usamos ConcurrentBag para manejar clientes en un entorno multihilo de manera eficiente
         private readonly List<TcpClient> Clientes = new List<TcpClient>();
         private readonly TcpListener listener;
         public event Action<PollitoDTO> PollitoRecibido;
@@ -71,23 +74,19 @@ namespace PollitosServidorU1.Services
                             }
                             catch (JsonException ex)
                             {
-                                Console.WriteLine($"Error de deserialización: {ex.Message}");
+                                MessageBox.Show($"Error de deserialización: {ex.Message}");
                             }
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error en la conexión con el cliente: {ex.Message}");
-                }
-                finally
-                {
-                    // Cuando termina la comunicación con el cliente, lo eliminamos de la lista
-                    client.Close();
-                    Clientes.Remove(client);  // Elimina el cliente de la lista concurrente
-                }
+                    MessageBox.Show($"Error en la conexión con el cliente: {ex.Message}");
+                }   
+                ClienteDesconectado.Invoke(client.Client.LocalEndPoint.ToString());
             }
         }
+
 
         //Metodo para enviar la lista de pollitos a los clientes
         public void Retransmitir(PollitoDTO pollo)
@@ -101,7 +100,7 @@ namespace PollitosServidorU1.Services
                 {
                     if (c.Connected)
                     {
-                        c.Client.Send( buffer);
+                        c.Client.Send(buffer);
                     }
                 }
                 catch (Exception)
@@ -120,22 +119,39 @@ namespace PollitosServidorU1.Services
             }
         }
         //Metodo para enviar la lista de pollitos a los clientes
-        public void Retransmitir(List<PollitoDTO> lista)
+        public void RetransmitirLista(List<PollitoDTO> lista)
         {
-            // Recorremos la lista de pollitos
-            for (int i = 0; i < lista.Count; i++)
+            // Recorremos la lista de clientes
+            for (int i = 0; i < Clientes.Count; i++)
             {
-                // Obtenemos el cliente correspondiente al pollito
-                var client = Clientes.Find(c => c.Client.RemoteEndPoint.ToString() == lista[i].Cliente);
                 // Si el cliente está conectado
-                if (client != null && client.Connected)
+                if (Clientes[i].Connected)
                 {
-                    // Obtenemos el stream de red del cliente
-                    var stream = client.GetStream();
-                    // Enviamos el mensaje a través del stream
-                    byte[] buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(lista[i]));
-                    stream.Write(buffer, 0, buffer.Length);
+                    var json = JsonConvert.SerializeObject(lista);
+                    // Serializar el objeto
+                    byte[] buffer = Encoding.UTF8.GetBytes(json);
+                    try
+                    {
+                        if (Clientes[i].Connected)
+                        {
+                            Clientes[i].Client.Send(buffer);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        if (Clientes[i].Client != null && Clientes[i].Client.RemoteEndPoint != null)
+                        {
+                            //Notificar al viewmodel para que lo quite de la vista
+                            ClienteDesconectado?.Invoke(Clientes[i].Client.RemoteEndPoint.ToString());
+                            //Cerrar la conexion con el cliente
+                            Clientes[i].Client.Close();
+                            //lo mejor seria tratar de reconectar el cliente,
+                            //pero por simplicidad se elimina
+                            Clientes.Remove(Clientes[i]);
+                        }
+                    }
                 }
+
             }
         }
     }

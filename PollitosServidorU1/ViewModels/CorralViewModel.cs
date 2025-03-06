@@ -1,20 +1,24 @@
-﻿using PollitosServidorU1.Models;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using PollitosServidorU1.Models;
 using PollitosServidorU1.Services;
 using System;
+using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 
 namespace PollitosServidorU1.ViewModels
 {
-    class CorralViewModel
+    public class CorralViewModel : ObservableObject
     {
         private readonly string[] Images = new string[2] { "🐥", "🌽" };
 
-        public int Columnas = 10, Renglones = 10 ,NumMaiz = 5;
+        public int Columnas { get; set; } = 10;
+        public int Renglones { get; set; } = 10;
+        public int NumMaiz { get; set; } = 5;
         public int TamañoCorral => Columnas * Renglones;
-        public  Corral Corral { get; set; }
+        public Corral Corral { get; set; }
         private static readonly TcpService Servidor = new TcpService();
         Random r = new Random();
-
         public CorralViewModel()
         {
             Corral = new Corral(TamañoCorral);
@@ -22,56 +26,42 @@ namespace PollitosServidorU1.ViewModels
             // Suscribir al evento de recepción de pollitos
             Servidor.PollitoRecibido += Servidor_PollitoRecibido;
         }
-
         private void Servidor_PollitoRecibido(PollitoDTO dto)
         {
-            //1.- Verificar si la persona esta en el tablero
-            var polloEnTablero = Corral.Pollos.FirstOrDefault(x => x != null && x.Cliente == dto.Cliente);
-            //Si no esta: agregarlo en la primera posicion disponible
-            if (polloEnTablero == null)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                //Si la posicion esta vacia
-                if (Corral.Pollos[dto.Posicion] == null)
-                {
-                    //Agregar el pollito al tablero
-                    Corral.Pollos[dto.Posicion] = dto;
-                }
-                else
+                //1.- Verificar si la persona esta en el tablero
+                var polloEnTablero = Corral.Pollos.
+                    FirstOrDefault(x => x != null && x.Cliente == dto.Cliente);
+                //Si no esta: agregarlo en la primera posicion disponible
+                if (polloEnTablero == null)
                 {
                     // Recorrer el corral para encontrar una casilla vacia
                     for (int i = 0; i < Corral.Pollos.Count; i++)
                     {
-                        //Si la casilla esta vacia
                         if (Corral.Pollos[i] == null)
                         {
-                            //Asignar la posicion
-                            dto.Posicion = (byte)i;
-                            //Salir del ciclo
+                            //Agregar el pollito al tablero
+                            Corral.Pollos[i] = dto;
                             break;
                         }
                     }
-
-                    //retransmitir la lista de pollitos
-                    Servidor.Retransmitir(Corral.Pollos.ToList());
                 }
-            }
-            // Si esta: moverlo
-            else
-            {
-                // Verificar si el movimiento es válido
-                if (EsMovimientoValido(dto.Posicion, dto.Direccion))
-                {
-                    // Mover el pollito
-                    MoverPollito(dto.Posicion, dto.Direccion);
-                    // Retransmitir la lista de pollitos
-                    Servidor.Retransmitir(Corral.Pollos.ToList());
-                }
-                // Si el movimiento no es válido, retransmitir la lista de pollitos
+                // Si esta: moverlo
                 else
                 {
-                    Servidor.Retransmitir(Corral.Pollos.ToList());
+                    // Verificar si el movimiento es válido
+                    if (EsMovimientoValido(dto.Posicion, dto.Direccion))
+                    {
+                        // Mover el pollito
+                        MoverPollito(dto.Posicion, dto.Direccion);
+                        // Retransmitir la lista de pollitos
+                    }
                 }
-            }
+                var lista = Corral.Pollos.Where(x => x != null).ToList();
+                //Retransmitir la lista si se ha movido o se agrego un nuevo cliente
+                Servidor.RetransmitirLista(lista);
+            });
         }
 
         //Verificar si el movimiento es válido
@@ -79,6 +69,7 @@ namespace PollitosServidorU1.ViewModels
         {
             switch (direccion)
             {
+
                 case 1:
                     return posicion >= Columnas; // Arriba
                 case 2:
@@ -155,7 +146,6 @@ namespace PollitosServidorU1.ViewModels
             Corral.Pollos[nuevaPosicion] = new PollitoDTO
             {
                 Imagen = Images[1],
-                Puntuacion = -10,
                 Posicion = nuevaPosicion
             };
         }

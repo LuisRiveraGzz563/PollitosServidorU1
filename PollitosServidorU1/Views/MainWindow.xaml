@@ -20,13 +20,13 @@
                 <DataTemplate>
                     <Border BorderBrush="Black" BorderThickness="1" Width="50" Height="50" Margin="-2">
                         <StackPanel HorizontalAlignment="Center">
-                            <TextBlock FontSize="14" Text="{Binding Cliente}" HorizontalAlignment="Center" />
+                            <TextBlock FontSize="14" Text="{Binding Nombre}" HorizontalAlignment="Center" />
                             <TextBlock FontSize="10" TextAlignment="Center" Text="{Binding Imagen}" />
                             <TextBlock x:Name="Puntuacion" HorizontalAlignment="Center" Text="{Binding Puntuacion}" FontWeight="Bold">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Puntuacion}" Value="-10">
+                                            <DataTrigger Binding="{Binding Puntuacion}" Value="0">
                                                 <Setter Property="Visibility" Value="Collapsed" />
                                             </DataTrigger>
                                         </Style.Triggers>

@@ -5,9 +5,9 @@ namespace PollitosClienteU1.Models
     public class ConexionModel: ObservableObject
     {
         [ObservableProperty]
-        public string Servidor { get; set; }
+        public string IP { get; set; }
 
         [ObservableProperty]
-        public string Usuario { get; set; }
+        public string Nombre { get; set; }
     }
 }
