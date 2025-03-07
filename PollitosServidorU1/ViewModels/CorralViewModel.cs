@@ -25,6 +25,17 @@ namespace PollitosServidorU1.ViewModels
             GenerarMaiz();
             // Suscribir al evento de recepción de pollitos
             Servidor.PollitoRecibido += Servidor_PollitoRecibido;
+            Servidor.ClienteDesconectado += Servidor_ClienteDesconectado;
+        }
+        private void Servidor_ClienteDesconectado(string cliente)
+        {
+            var pollo = Corral.Pollos.FirstOrDefault(x => x.Cliente == cliente);
+            if (pollo != null)
+            {
+                Corral.Pollos.Remove(pollo);
+                var listaActualizada = Corral.Pollos.Where(x => x != null).ToList();
+                Servidor.RetransmitirLista(listaActualizada);
+            }
         }
         private void Servidor_PollitoRecibido(PollitoDTO dto)
         {
@@ -63,13 +74,11 @@ namespace PollitosServidorU1.ViewModels
                 Servidor.RetransmitirLista(lista);
             });
         }
-
         //Verificar si el movimiento es válido
         private bool EsMovimientoValido(int posicion, int direccion)
         {
             switch (direccion)
             {
-
                 case 1:
                     return posicion >= Columnas; // Arriba
                 case 2:
@@ -85,10 +94,12 @@ namespace PollitosServidorU1.ViewModels
         public void MoverPollito(int posicion, int direccion)
         {
             // Si la posición no está vacía, no hacer nada
-            if (Corral.Pollos[posicion] != null) return;
-            // variable para la nueva posición
+            if (Corral.Pollos[posicion] == null) return;
+
+            // Variable para la nueva posición
             int nuevaPosicion = posicion;
-            //Asignar la nueva posicion dependiendo de la direccion
+
+            // Asignar la nueva posición dependiendo de la dirección
             switch (direccion)
             {
                 // Arriba
@@ -99,27 +110,32 @@ namespace PollitosServidorU1.ViewModels
                 case 3 when nuevaPosicion % Columnas != 0: nuevaPosicion -= 1; break;
                 // Derecha
                 case 4 when nuevaPosicion % Columnas != (Columnas - 1): nuevaPosicion += 1; break;
+                default: return; // Si la dirección no es válida, salir del método
             }
 
-            // Verificar si hay maíz en la nueva posición
-            if (Corral.Pollos[nuevaPosicion] != null && Corral.Pollos[nuevaPosicion].Puntuacion == -10)
+            // Si no hay nada en la nueva posición, mover el pollito
+            if (Corral.Pollos[nuevaPosicion] == null)
             {
-                //Aumentar la puntuación
-                Corral.Pollos[posicion].Puntuacion++;
-                // Eliminar el maíz
-                Corral.Pollos[nuevaPosicion] = Corral.Pollito;
+                // Mover el pollito
+                Corral.Pollos[nuevaPosicion] = Corral.Pollos[posicion];
+                // Quitar el pollito de su posición original
+                Corral.Pollos[posicion] = null;
+                // Cambiar el valor de su posición
+                Corral.Pollos[nuevaPosicion].Posicion = nuevaPosicion;
+            }
+            // Si hay un maíz, "comerlo", aumentar la puntuación y generar un nuevo maíz
+            else if (Corral.Pollos[nuevaPosicion].Imagen == "🌽")
+            {
                 // Asignar la nueva posición
-                Corral.Pollito.Posicion = nuevaPosicion;
+                Corral.Pollos[nuevaPosicion] = Corral.Pollos[posicion];
+                // Aumentar la puntuación
+                Corral.Pollos[nuevaPosicion].Puntuacion++;
+                // Asignar la nueva posición
+                Corral.Pollos[nuevaPosicion].Posicion = nuevaPosicion;
+                // Eliminar el pollito original
+                Corral.Pollos[posicion] = null;
                 // Generar un nuevo maíz
                 GenerarNuevoMaiz();
-            }
-
-            // Si la nueva posición está vacía, mover
-            else if (Corral.Pollos[nuevaPosicion] == null)
-            {
-                Corral.Pollos[posicion] = null;
-                Corral.Pollos[nuevaPosicion] = Corral.Pollito;
-                Corral.Pollito.Posicion = nuevaPosicion;
             }
         }
         // Metodo para manejar la cantidad de maiz generado

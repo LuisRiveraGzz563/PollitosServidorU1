@@ -14,12 +14,12 @@ namespace PollitosClienteU1.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         public readonly TcpService Servidor = new TcpService();
+        public PollitoDTO Pollito { get; set; }
         #region INotifyPropertyChanged
         void OnPropertyChanged(string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
-
         public event PropertyChangedEventHandler PropertyChanged;
         #endregion
         public MainViewModel()
@@ -28,89 +28,40 @@ namespace PollitosClienteU1.ViewModels
             ConectarCommand = new RelayCommand(Conectar);
             Servidor.PollitoRecibido += Servidor_ListaRecibida;
         }
+
         #region Tablero 
         public int Columnas { get; set; } = 10;
         public int Renglones { get; set; } = 10;
         private int Tamaño => Columnas * Renglones;
         public Corral Corral { get; set; }
-        
         private void Servidor_ListaRecibida(List<PollitoDTO> lista)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
-                for (int i = 0; i < lista.Count; i++)
-                {
-                    var anterior = Corral.Pollos.FirstOrDefault(x =>
-                    x != null && x.Cliente == lista[i].Cliente && x.Posicion == lista[i].Posicion);
+                // Limpiar el corral antes de actualizarlo
+                Corral.Pollos.Clear();
 
-                    //Si no esta en pantalla
-                    if(anterior == null)
+                // Inicializar el corral con espacios vacíos (null)
+                for (int i = 0; i < Tamaño; i++)
+                {
+                    Corral.Pollos.Add(null);
+                }
+
+                // Agregar los nuevos pollitos al corral
+                foreach (var pollito in lista)
+                {
+                    if(pollito.Cliente == Servidor.ObtenerIPLocal())
                     {
-                        if (Corral.Pollos[lista[i].Posicion] != null)
-                        {
-                            foreach (var item in Corral.Pollos)
-                            {
-                                if (item == null)
-                                {
-                                    // Agregarlo al corral
-                                    lista[i].Posicion = Corral.Pollos.IndexOf(item);
-                                    // Agregarlo al corral
-                                    Corral.Pollos[lista[i].Posicion] = lista[i];
-                                    break;
-                                }
-                            }
-                        }
-                        // Agregarlo al corral
-                        Corral.Pollos[lista[i].Posicion] = lista[i];
+                        this.Pollito.Posicion = pollito.Posicion;
                     }
-                    //Si ya estaba
-                    else
+                    if (pollito.Posicion >= 0 && pollito.Posicion < Tamaño)
                     {
-                        if(EsMovimientoValido(lista[i].Posicion, lista[i].Direccion))
-                        {
-                            MoverPollito(lista[i].Posicion, lista[i].Direccion);
-                        }
+                        Corral.Pollos[pollito.Posicion] = pollito;
                     }
                 }
             });
         }
-        private bool EsMovimientoValido(int posicion, int direccion)
-        {
-            switch (direccion)
-            {
-
-                case 1:
-                    return posicion >= Columnas; // Arriba
-                case 2:
-                    return posicion < Columnas * (Renglones - 1); // Abajo
-                case 3:
-                    return posicion % Columnas != 0; // Izquierda
-                case 4:
-                    return (posicion + 1) % Columnas != 0; // Derecha
-                default:
-                    return false;
-            }
-        }
-        public void MoverPollito(int posicion, int direccion)
-        {
-            // Si la posición no está vacía, no hacer nada
-            if (Corral.Pollos[posicion] != null) return;
-            // variable para la nueva posición
-            int nuevaPosicion = posicion;
-            //Asignar la nueva posicion dependiendo de la direccion
-            switch (direccion)
-            {
-                // Arriba
-                case 1 when nuevaPosicion >= Columnas: nuevaPosicion -= Columnas; break;
-                // Abajo
-                case 2 when nuevaPosicion < (Tamaño - Columnas): nuevaPosicion += Columnas; break;
-                // Izquierda
-                case 3 when nuevaPosicion % Columnas != 0: nuevaPosicion -= 1; break;
-                // Derecha
-                case 4 when nuevaPosicion % Columnas != (Columnas - 1): nuevaPosicion += 1; break;
-            }
-            #endregion
-        }
+        #endregion
         #region ConexionView
         #region Propiedades
         [ObservableProperty]
@@ -132,7 +83,7 @@ namespace PollitosClienteU1.ViewModels
                 if (IsConnected)
                 {
                     //Crear un pollito para enviarlo por primera vez
-                    PollitoDTO pollito = new PollitoDTO()
+                    Pollito = new PollitoDTO()
                     {
                         Nombre = Conexion.Nombre,
                         Posicion = 0,
@@ -141,7 +92,7 @@ namespace PollitosClienteU1.ViewModels
                         Imagen = "🐥"
                     };
 
-                    Servidor.EnviarPollito(pollito);
+                    Servidor.EnviarPollito(Pollito);
 
                 }
                 OnPropertyChanged(nameof(IsConnected));
@@ -150,6 +101,14 @@ namespace PollitosClienteU1.ViewModels
             {
                 MessageBox.Show("Error al conectar con el servidor:" + ex.Message);
             }
+        }
+        #endregion
+        #region Movimiento  
+        public void EnviarMovimiento(int num)
+        {
+            //Asignar la direccion al pollito
+            Pollito.Direccion = num;
+            Servidor.EnviarPollito(Pollito);
         }
         #endregion
     }

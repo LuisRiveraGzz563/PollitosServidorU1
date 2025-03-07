@@ -16,7 +16,6 @@ namespace PollitosClienteU1.Services
         public TcpService()
         {
             tcpClient = new TcpClient();
-
         }
 
         #region Metodos de conexion
@@ -54,8 +53,11 @@ namespace PollitosClienteU1.Services
         {
             try
             {
-                // Asignamos la IP del cliente al objeto PollitoDTO
-                dto.Cliente = tcpClient.Client.LocalEndPoint.ToString();
+                if (dto.Cliente == null)
+                {
+                    // Asignamos la IP del cliente al objeto PollitoDTO
+                    dto.Cliente = ObtenerIPLocal();
+                }
                 // Serializamos el objeto a JSON
                 var json = JsonConvert.SerializeObject(dto);
                 // Convertimos el JSON a bytes
@@ -70,7 +72,6 @@ namespace PollitosClienteU1.Services
                 Desconectar();
             }
         }
-
         private void Escuchar()
         {
             if (tcpClient != null)
@@ -101,6 +102,7 @@ namespace PollitosClienteU1.Services
                             }
                         }
                     }
+                    client.Close();
                 }
                 catch (Exception ex)
                 {
@@ -133,6 +135,9 @@ namespace PollitosClienteU1.Services
                 Desconectar();
             }
         }
-
+        public string ObtenerIPLocal()
+        {
+            return tcpClient.Client.LocalEndPoint.ToString();
+        }
     }
 }

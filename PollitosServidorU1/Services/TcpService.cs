@@ -46,7 +46,6 @@ namespace PollitosServidorU1.Services
                 Thread.Sleep(1000);
             }
         }
-
         private void Escuchar(object tcpClient)
         {
             if (tcpClient != null)
@@ -78,14 +77,26 @@ namespace PollitosServidorU1.Services
                             }
                         }
                     }
+                    EliminarCliente(client);
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error en la conexión con el cliente: {ex.Message}");
-                }   
-                ClienteDesconectado.Invoke(client.Client.LocalEndPoint.ToString());
+                }
             }
         }
+
+        private void EliminarCliente(TcpClient cliente)
+        {
+            if (cliente != null)
+            {
+                // Notificar a la vista
+                ClienteDesconectado?.Invoke(cliente.Client.RemoteEndPoint.ToString());
+                cliente.Close();
+                Clientes.Remove(cliente);
+            }
+        }
+
 
 
         //Metodo para enviar la lista de pollitos a los clientes
@@ -151,8 +162,8 @@ namespace PollitosServidorU1.Services
                         }
                     }
                 }
-
             }
         }
+      
     }
 }

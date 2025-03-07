@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:PollitosClienteU1.Views"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
+             KeyDown="UserControl_KeyDown"
              >
     <DockPanel>
         <TextBlock Text="Corral:" DockPanel.Dock="Top" FontSize="12" TextAlignment="Center" />
