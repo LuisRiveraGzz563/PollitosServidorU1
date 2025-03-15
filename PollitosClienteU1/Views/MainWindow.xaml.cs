@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PollitosClienteU1.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,12 @@ namespace PollitosClienteU1
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            var vm = DataContext as MainViewModel;
+            vm?.CerrarConexion();
         }
     }
 }

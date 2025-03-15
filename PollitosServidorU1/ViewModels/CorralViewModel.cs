@@ -4,12 +4,14 @@ using PollitosServidorU1.Services;
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 
 namespace PollitosServidorU1.ViewModels
 {
     public class CorralViewModel : ObservableObject
     {
+        #region Propiedades
         private readonly string[] Images = new string[2] { "🐥", "🌽" };
 
         public int Columnas { get; set; } = 10;
@@ -17,19 +19,48 @@ namespace PollitosServidorU1.ViewModels
         public int NumMaiz { get; set; } = 5;
         public int TamañoCorral => Columnas * Renglones;
         public Corral Corral { get; set; }
-        private static readonly TcpService Servidor = new TcpService();
-        Random r = new Random();
+        private static readonly TcpServidor Servidor = new TcpServidor();
+        private readonly Random r = new Random();
+        #endregion
+
+        private readonly Timer Contador;
         public CorralViewModel()
         {
             Corral = new Corral(TamañoCorral);
             GenerarMaiz();
+
             // Suscribir al evento de recepción de pollitos
             Servidor.PollitoRecibido += Servidor_PollitoRecibido;
             Servidor.ClienteDesconectado += Servidor_ClienteDesconectado;
+            // Inicializar el temporizador para eliminar pollitos cada 5 segundos
+            Contador = new Timer(EliminarMaiz, null, 1000, 1000);
+        }
+
+        private void EliminarMaiz(object state)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Lista de Maiz
+                var lista = Corral.Pollos.Where(x => x!=null && x.Imagen == Images[1]).ToList();
+                foreach (var maiz in lista)
+                {
+                    if(maiz.Duracion == 0)
+                    {
+                        //Eliminar Maiz
+                        Corral.Pollos[maiz.Posicion] = null;
+                        //Generar uno nuevo
+                        GenerarNuevoMaiz();
+                    }
+                    else
+                    {
+                        maiz.Duracion--;
+                    }
+                }
+            });
         }
         private void Servidor_ClienteDesconectado(string cliente)
         {
-            var pollo = Corral.Pollos.FirstOrDefault(x => x.Cliente == cliente);
+            var pollo = Corral.Pollos.FirstOrDefault(x => x != null && x.Cliente == cliente);
             if (pollo != null)
             {
                 Corral.Pollos.Remove(pollo);
@@ -43,7 +74,7 @@ namespace PollitosServidorU1.ViewModels
             {
                 //1.- Verificar si la persona esta en el tablero
                 var polloEnTablero = Corral.Pollos.
-                    FirstOrDefault(x => x != null && x.Cliente == dto.Cliente);
+                    FirstOrDefault(x => x != null && x.Nombre == dto.Nombre && x.Cliente == dto.Cliente);
                 //Si no esta: agregarlo en la primera posicion disponible
                 if (polloEnTablero == null)
                 {

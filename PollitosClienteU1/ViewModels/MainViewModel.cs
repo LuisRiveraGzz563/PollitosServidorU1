@@ -14,6 +14,7 @@ namespace PollitosClienteU1.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         public readonly TcpService Servidor = new TcpService();
+
         public PollitoDTO Pollito { get; set; }
         #region INotifyPropertyChanged
         void OnPropertyChanged(string name = null)
@@ -28,7 +29,10 @@ namespace PollitosClienteU1.ViewModels
             ConectarCommand = new RelayCommand(Conectar);
             Servidor.PollitoRecibido += Servidor_ListaRecibida;
         }
-
+        public void CerrarConexion()
+        {
+            Servidor.Desconectar();
+        }                          
         #region Tablero 
         public int Columnas { get; set; } = 10;
         public int Renglones { get; set; } = 10;
@@ -52,7 +56,7 @@ namespace PollitosClienteU1.ViewModels
                 {
                     if(pollito.Cliente == Servidor.ObtenerIPLocal())
                     {
-                        this.Pollito.Posicion = pollito.Posicion;
+                        Pollito.Posicion = pollito.Posicion;
                     }
                     if (pollito.Posicion >= 0 && pollito.Posicion < Tamaño)
                     {

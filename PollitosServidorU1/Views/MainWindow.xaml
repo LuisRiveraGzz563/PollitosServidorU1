@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:PollitosServidorU1.ViewModels"
         xmlns:models="clr-namespace:PollitosServidorU1.Models" 
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1250"
+        Title="MainWindow" Height="700" Width="1250"
         >
     <Window.DataContext>
         <vm:CorralViewModel></vm:CorralViewModel>

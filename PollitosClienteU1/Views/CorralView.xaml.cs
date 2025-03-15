@@ -31,19 +31,21 @@ namespace PollitosClienteU1.Views
         private void UserControl_KeyDown(object sender, KeyEventArgs e)
         {     
             var vm = this.DataContext as MainViewModel;
-            if (e.Key == Key.Up)
+            //Movimiento de pollito (Arriba,Abajo,Izquierda y derecha)
+            //Tambien puedes utilizar (W,A,S,D)
+            if (e.Key == Key.Up || e.Key == Key.W)
             {
                 vm.EnviarMovimiento(1);
             }
-            if (e.Key == Key.Down)
+            if (e.Key == Key.Down || e.Key == Key.S)
             {
                 vm.EnviarMovimiento(2);
             }
-            if (e.Key == Key.Left)
+            if (e.Key == Key.Left || e.Key == Key.A)
             {
                 vm.EnviarMovimiento(3);
             }
-            if (e.Key == Key.Right)
+            if (e.Key == Key.Right || e.Key == Key.D)
             {
                 vm.EnviarMovimiento(4);
             }

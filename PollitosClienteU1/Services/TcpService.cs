@@ -2,6 +2,7 @@
 using PollitosClienteU1.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -35,7 +36,7 @@ namespace PollitosClienteU1.Services
         //Este metodo se encarga de desconectar el cliente del servidor
         public void Desconectar()
         {
-            if (tcpClient.Connected)
+            if (!tcpClient.Connected)
             {
                 tcpClient.Close();
             }
@@ -102,11 +103,10 @@ namespace PollitosClienteU1.Services
                             }
                         }
                     }
-                    client.Close();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error en la conexión con el cliente: {ex.Message}");
+                    Debug.WriteLine(ex.Message);
                 }
             }
         }
@@ -129,15 +129,14 @@ namespace PollitosClienteU1.Services
                 // Invocamos la acción con la lista recibida
                 PollitoRecibido?.Invoke(lista);
             }
-            catch (Exception ex)
+            catch (SocketException ex)
             {
-                MessageBox.Show(ex.Message);
-                Desconectar();
+                Debug.WriteLine(ex.Message);
             }
         }
         public string ObtenerIPLocal()
         {
-            return tcpClient.Client.LocalEndPoint.ToString();
+            return tcpClient.Client.RemoteEndPoint.ToString();
         }
     }
 }

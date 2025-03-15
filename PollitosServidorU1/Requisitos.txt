@@ -1,0 +1,27 @@
+1.- Todos los clientes deben ver en tiempo real los movimientos de los demás pollitos. 
+
+2.- El maíz debe aparecer en posiciones aleatorias dentro de la cuadrícula en todos los clientes.(Listo)
+
+3.- Un pollito debe poder "comer" el maíz al ocupar su celda, y el servidor debe actualizar el cambio.(Listo)
+
+4.- Cada pollito debe tener un identificador único (puede ser un nombre o número).  
+	Los pollitos no deben salirse de los límites del corral.
+
+5.- No hay un "fin" en el juego. 
+El objetivo es simplemente que los pollitos sigan moviéndose y comiendo maíz mientras interactúan 
+con el entorno y otros jugadores (pollitos).(Listo)
+
+6.- Todos los juegos utilizan sonidos. 
+	El juego debe incluir efectos de sonido para las interacciones o como fondo.
+
+7.- Los pollitos deberían tener un tiempo límite para comer el maíz 
+	(por ejemplo, un temporizador) si nadie lo come, desaparece para evitar 
+	que el juego se mantenga estático.(Listo)
+
+8.- Debe mostrarse una tabla reflejando la cantidad de comidas que ha realizado cada pollito.
+	La aplicación debe ser intuitiva, fácil de usar y responder con fluidez tanto en el cliente 
+	como en el servidor. Solo un equipo obtendrá los 10 puntos por el mejor diseño de la 
+	aplicación UDP y de ahí hacia abajo según la calidad del diseño.
+	Cuando un pollito se desconecta, debe liberar su lugar de forma automática. 
+	Al reconectarse, debe aparecer con cero comidas. Al conectar debe recibir el 
+	estado actual del corral.

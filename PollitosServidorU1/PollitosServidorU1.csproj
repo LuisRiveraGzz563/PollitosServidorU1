@@ -95,7 +95,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\PollitoDTO.cs" />
-    <Compile Include="Services\TcpService.cs" />
+    <Compile Include="Services\TcpServidor.cs" />
     <Compile Include="Models\Corral.cs" />
     <Compile Include="ViewModels\CorralViewModel.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
@@ -130,7 +130,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Requisitos.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\CommunityToolkit.Mvvm.8.4.0\build\CommunityToolkit.Mvvm.targets" Condition="Exists('..\packages\CommunityToolkit.Mvvm.8.4.0\build\CommunityToolkit.Mvvm.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -1,24 +1,21 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq;
+using System.Diagnostics;
 using System.Net;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Windows;
 
 namespace PollitosServidorU1.Services
 {
-    public class TcpService
+    public class TcpServidor
     {
         private readonly List<TcpClient> Clientes = new List<TcpClient>();
         private readonly TcpListener listener;
         public event Action<PollitoDTO> PollitoRecibido;
         public event Action<string> ClienteDesconectado;
-        public TcpService()
+        public TcpServidor()
         {
             // Inicializamos el objeto listener con la IP Any y el puerto 5000
             listener = new TcpListener(IPAddress.Any, 5000);
@@ -31,7 +28,7 @@ namespace PollitosServidorU1.Services
 
         private void RecibirClientes()
         {
-            while (true)
+            while (Clientes.Count>5)
             {
                 // Aceptamos clientes TCP
                 TcpClient tcpClient = listener.AcceptTcpClient();
@@ -61,7 +58,6 @@ namespace PollitosServidorU1.Services
                             byte[] buffer = new byte[client.Available];
                             stream.Read(buffer, 0, buffer.Length);
                             var json = Encoding.UTF8.GetString(buffer);
-
                             try
                             {
                                 // Deserializamos el JSON a un objeto PollitoDTO
@@ -73,31 +69,17 @@ namespace PollitosServidorU1.Services
                             }
                             catch (JsonException ex)
                             {
-                                MessageBox.Show($"Error de deserialización: {ex.Message}");
+                                Debug.WriteLine($"Error de deserialización: {ex.Message}");
                             }
                         }
                     }
-                    EliminarCliente(client);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error en la conexión con el cliente: {ex.Message}");
+                    Debug.WriteLine($"Error en la conexión con el cliente: {ex.Message}");
                 }
             }
         }
-
-        private void EliminarCliente(TcpClient cliente)
-        {
-            if (cliente != null)
-            {
-                // Notificar a la vista
-                ClienteDesconectado?.Invoke(cliente.Client.RemoteEndPoint.ToString());
-                cliente.Close();
-                Clientes.Remove(cliente);
-            }
-        }
-
-
 
         //Metodo para enviar la lista de pollitos a los clientes
         public void Retransmitir(PollitoDTO pollo)
@@ -116,54 +98,41 @@ namespace PollitosServidorU1.Services
                 }
                 catch (Exception)
                 {
-                    if (c.Client != null && c.Client.RemoteEndPoint != null)
-                    {
-                        //Notificar al viewmodel para que lo quite de la vista
-                        ClienteDesconectado?.Invoke(c.Client.RemoteEndPoint.ToString());
-                        //Cerrar la conexion con el cliente
-                        c.Client.Close();
-                        //lo mejor seria tratar de reconectar el cliente,
-                        //pero por simplicidad se elimina
-                        Clientes.Remove(c);
-                    }
+                    DesconectarCliente(c);
                 }
             }
         }
         //Metodo para enviar la lista de pollitos a los clientes
         public void RetransmitirLista(List<PollitoDTO> lista)
         {
+            byte[] buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(lista));
             // Recorremos la lista de clientes
-            for (int i = 0; i < Clientes.Count; i++)
+            foreach (var c in Clientes)
             {
-                // Si el cliente está conectado
-                if (Clientes[i].Connected)
+                try
                 {
-                    var json = JsonConvert.SerializeObject(lista);
-                    // Serializar el objeto
-                    byte[] buffer = Encoding.UTF8.GetBytes(json);
-                    try
+                    if (c.Connected)
                     {
-                        if (Clientes[i].Connected)
-                        {
-                            Clientes[i].Client.Send(buffer);
-                        }
+                        c.Client.Send(buffer);
                     }
-                    catch (Exception)
-                    {
-                        if (Clientes[i].Client != null && Clientes[i].Client.RemoteEndPoint != null)
-                        {
-                            //Notificar al viewmodel para que lo quite de la vista
-                            ClienteDesconectado?.Invoke(Clientes[i].Client.RemoteEndPoint.ToString());
-                            //Cerrar la conexion con el cliente
-                            Clientes[i].Client.Close();
-                            //lo mejor seria tratar de reconectar el cliente,
-                            //pero por simplicidad se elimina
-                            Clientes.Remove(Clientes[i]);
-                        }
-                    }
+                }
+                catch (Exception)
+                {
+                    DesconectarCliente(c);
                 }
             }
         }
-      
+        private void DesconectarCliente(TcpClient Cliente)
+        {
+            if (Cliente.Client.RemoteEndPoint != null && Cliente.Client.Connected == false)
+            {
+                //Notificar al viewmokdel para que lo quite de la vista
+                Cliente.Close();
+                //lo mejor seria tratar de reconectar el cliente,
+                //pero por simplicidad se elimina
+                Clientes.Remove(Cliente); 
+                ClienteDesconectado?.Invoke(Cliente.Client.RemoteEndPoint.ToString());
+            }
+        }
     }
 }
