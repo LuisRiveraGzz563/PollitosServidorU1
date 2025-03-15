@@ -40,7 +40,7 @@ namespace PollitosServidorU1.ViewModels
             var pollo = Corral.Pollos.FirstOrDefault(x => x != null && x.Cliente == cliente);
             if (pollo != null)
             {
-                Corral.Pollos.Remove(pollo);
+                Corral.Pollos[pollo.Posicion] = null;
                 var listaActualizada = Corral.Pollos.Where(x => x != null).ToList();
                 Servidor.RetransmitirLista(listaActualizada);
             }
@@ -51,7 +51,7 @@ namespace PollitosServidorU1.ViewModels
             {
                 //1.- Verificar si la persona esta en el tablero
                 var polloEnTablero = Corral.Pollos.
-                    FirstOrDefault(x => x != null && x.Nombre == dto.Nombre && x.Cliente == dto.Cliente);
+                    FirstOrDefault(x => x != null && x.Nombre == dto.Nombre);
                 //Si no esta: agregarlo en la primera posicion disponible
                 if (polloEnTablero == null)
                 {
@@ -69,9 +69,8 @@ namespace PollitosServidorU1.ViewModels
                 // Si esta: moverlo
                 else
                 {
-                    //Si existen 2 clientes con el mismo nombre
-                    var duplicado = Corral.Pollos.Count(x => x != null && x.Nombre == dto.Nombre);
-                    if (duplicado <= 1)
+                    //Si se esta moviendo no es otro usuario
+                    if (dto.Direccion != 0)
                     {
                         // Verificar si el movimiento es válido
                         if (EsMovimientoValido(dto.Posicion, dto.Direccion))
@@ -83,10 +82,11 @@ namespace PollitosServidorU1.ViewModels
                     }
                     else
                     {
-                        Servidor.DesconectarClienteDTO(dto.Cliente);
+                        Servidor.DesconectarCliente(dto.Cliente);
                     }
                 }
                 var lista = Corral.Pollos.Where(x => x != null).ToList();
+                
                 //Retransmitir la lista si se ha movido o se agrego un nuevo cliente
                 Servidor.RetransmitirLista(lista);
             });
@@ -181,6 +181,7 @@ namespace PollitosServidorU1.ViewModels
 
             Corral.Pollos[nuevaPosicion] = new PollitoDTO
             {
+                Puntuacion = -10,
                 Imagen = Images[1],
                 Posicion = nuevaPosicion
             };

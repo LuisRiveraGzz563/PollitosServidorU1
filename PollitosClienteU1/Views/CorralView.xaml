@@ -7,23 +7,31 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              KeyDown="UserControl_KeyDown"
-             
+             x:Name="CorralView"
              >
     <DockPanel>
         <TextBlock Text="Corral:" DockPanel.Dock="Top" FontSize="12" TextAlignment="Center" />
-        <ListView ItemsSource="{Binding Corral.Pollos}">
-            <ListView.ItemTemplate>
+        <ItemsControl ItemsSource="{Binding Corral.Pollos}">
+            <!-- Usamos UniformGrid para asegurarnos de que haya 5 pollos por renglón -->
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="{Binding Renglones}" Rows="{Binding Columnas}"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border BorderBrush="Black" BorderThickness="1" Width="50" Height="50" Margin="-2">
                         <StackPanel>
-                            <TextBlock FontSize="14" Text="{Binding Nombre}" HorizontalAlignment="Center" />
-                            <TextBlock FontSize="10" TextAlignment="Center" Text="{Binding Imagen}" />
-                            <TextBlock x:Name="Puntuacion" HorizontalAlignment="Center" 
-                                    Text="{Binding Puntuacion}" FontWeight="Bold">
+                            <TextBlock FontSize="8" Text="{Binding Nombre}" HorizontalAlignment="Center" />
+                            <TextBlock FontSize="14" TextAlignment="Center" Text="{Binding Imagen}" />
+                            <TextBlock Text="{Binding Puntuacion}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
+                                        <Setter Property="FontSize" Value="12"/>
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="HorizontalAlignment" Value="Center"/>
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Puntuacion}" Value="0">
+                                            <DataTrigger Binding="{Binding Puntuacion}" Value="-10">
                                                 <Setter Property="Visibility" Value="Collapsed" />
                                             </DataTrigger>
                                         </Style.Triggers>
@@ -33,14 +41,7 @@
                         </StackPanel>
                     </Border>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-
-            <!-- Usamos UniformGrid para asegurarnos de que haya 5 pollos por renglón -->
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid Columns="{Binding Renglones}" Rows="{Binding Columnas}"/>
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
-        </ListView>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </DockPanel>
 </UserControl>

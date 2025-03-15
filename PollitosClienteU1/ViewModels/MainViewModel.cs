@@ -5,7 +5,7 @@ using PollitosClienteU1.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
+using System.Net;
 using System.Windows;
 using System.Windows.Input;
 
@@ -28,7 +28,6 @@ namespace PollitosClienteU1.ViewModels
             ConectarCommand = new RelayCommand(Conectar);
             Servidor.ListaRecibida += Servidor_ListaRecibida;
         }
-
         #region Tablero 
         public int Columnas { get; set; } = 10;
         public int Renglones { get; set; } = 10;
@@ -36,16 +35,18 @@ namespace PollitosClienteU1.ViewModels
         public Corral Corral { get; set; }
         private void Servidor_ListaRecibida(List<PollitoDTO> lista)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            Application.Current.Dispatcher?.Invoke(() =>
             {
                 // Limpiar el corral antes de actualizarlo
                 Corral.Pollos.Clear();
+
                 // Inicializar el corral con espacios vacíos (null)
                 for (int i = 0; i < Tamaño; i++)
                 {
                     Corral.Pollos.Add(null);
                 }
-                // Agregar los nuevos pollitos al corral
+
+                // Agregar los pollitos al corral
                 foreach (var pollito in lista)
                 {
                     if (pollito.Posicion >= 0 && pollito.Posicion < Tamaño)
@@ -68,6 +69,15 @@ namespace PollitosClienteU1.ViewModels
         {
             try
             {
+                bool IsValid = IPAddress.TryParse(Conexion.IP, out IPAddress ip);
+                if (!IsValid)
+                {
+                    MessageBox.Show("La direccion IP es incorrecta");
+                }
+                if (string.IsNullOrWhiteSpace(Conexion.Nombre))
+                {
+                    MessageBox.Show("Ingrese un Nombre");
+                }
                 //Verificamos si el cliente esta conectado
                 IsConnected = Servidor.IsConnected();
                 if (!IsConnected)
@@ -78,19 +88,15 @@ namespace PollitosClienteU1.ViewModels
                 //Si esta conectado enviamos un pollito
                 if (Servidor.IsConnected())
                 {
-                    IsConnected = true;
                     //Crear un pollito para enviarlo por primera vez
                     Pollito = new PollitoDTO()
                     {
                         Nombre = Conexion.Nombre,
-                        Posicion = 0,
-                        Puntuacion = 0,
-                        Direccion = 0,
-                        Duracion = 5,
                         Imagen = "🐥"
                     };
                     Servidor.EnviarPollito(Pollito);
                 }
+                IsConnected = Servidor.IsConnected();
                 OnPropertyChanged(nameof(IsConnected));
             }
             catch (Exception ex)

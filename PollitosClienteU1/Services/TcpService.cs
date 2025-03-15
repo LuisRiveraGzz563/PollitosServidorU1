@@ -137,7 +137,7 @@ namespace PollitosClienteU1.Services
         }
         public string ObtenerIP()
         {
-            return tcpClient.Client.RemoteEndPoint.ToString();
+            return tcpClient.Client.LocalEndPoint.ToString();
         }
     }
 }

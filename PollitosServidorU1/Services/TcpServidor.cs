@@ -21,11 +21,9 @@ namespace PollitosServidorU1.Services
             // Inicializamos el objeto listener con la IP Any y el puerto 5000
             listener = new TcpListener(IPAddress.Any, 5000);
             listener.Start();
-
             // Recibimos clientes en un hilo aparte
             Thread recibirClientes = new Thread(RecibirClientes) { IsBackground = true };
             recibirClientes.Start();
-            Thread.Sleep(1000);
         }
         private void RecibirClientes()
         {
@@ -100,7 +98,7 @@ namespace PollitosServidorU1.Services
                 }
                 catch (Exception)
                 {
-                    DesconectarCliente(c);
+                    DesconectarCliente(c.Client.RemoteEndPoint.ToString());
                 }
             }
         }
@@ -108,46 +106,37 @@ namespace PollitosServidorU1.Services
         public void RetransmitirLista(List<PollitoDTO> lista)
         {
             byte[] buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(lista));
-            // Recorremos la lista de clientes
-            foreach (var c in Clientes)
+            var count = Clientes.Count;
+            if (count>0)
             {
-                try
+                // Recorremos la lista de clientes
+                foreach (var c in Clientes.ToList())
                 {
-                    if (c.Connected)
+                    try
                     {
-                        c.Client.Send(buffer);
+                        if (c.Connected)
+                        {
+                            c.Client.Send(buffer);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        DesconectarCliente(c.Client.RemoteEndPoint.ToString());
                     }
                 }
-                catch (Exception)
-                {
-                    DesconectarCliente(c);
-                }
             }
         }
-        public void DesconectarCliente(TcpClient Cliente)
+        public void DesconectarCliente(string cliente)
         {
-            if (Cliente.Client.RemoteEndPoint != null && Cliente.Client.Connected == false)
-            {
-                //Notificar al viewmokdel para que lo quite de la vista
-                ClienteDesconectado?.Invoke(Cliente.Client.RemoteEndPoint.ToString());
-                Cliente.Close();
-                //lo mejor seria tratar de reconectar el cliente,
-                //pero por simplicidad se elimina
-                Clientes.Remove(Cliente); 
-            }
-        }
-
-        public void DesconectarClienteDTO(string cliente)
-        {
-            var clientedto = Clientes.FirstOrDefault(x => x.Client.RemoteEndPoint.ToString() == cliente); 
-            if (clientedto != null)
+            var c = Clientes.FirstOrDefault(x => x.Client.RemoteEndPoint.ToString() == cliente); 
+            if (c != null)
             {
                 //Notificar al viewmodel para que lo quite de la vista
-                ClienteDesconectado?.Invoke(clientedto.Client.RemoteEndPoint.ToString());
-                clientedto.Close();
+                ClienteDesconectado?.Invoke(c.Client.RemoteEndPoint.ToString());
+                c.Close();
                 //lo mejor seria tratar de reconectar el cliente,
                 //pero por simplicidad se elimina
-                Clientes.Remove(clientedto);
+                Clientes.Remove(c);
             }
         }
     }
