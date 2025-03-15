@@ -13,11 +13,5 @@ namespace PollitosClienteU1
         {
             InitializeComponent();
         }
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            var vm = DataContext as MainViewModel;
-            vm?.CerrarConexion();
-        }
     }
 }

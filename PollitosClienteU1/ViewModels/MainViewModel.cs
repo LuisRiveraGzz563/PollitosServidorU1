@@ -14,7 +14,6 @@ namespace PollitosClienteU1.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         public readonly TcpService Servidor = new TcpService();
-
         public PollitoDTO Pollito { get; set; }
         #region INotifyPropertyChanged
         void OnPropertyChanged(string name = null)
@@ -29,10 +28,7 @@ namespace PollitosClienteU1.ViewModels
             ConectarCommand = new RelayCommand(Conectar);
             Servidor.ListaRecibida += Servidor_ListaRecibida;
         }
-        public void CerrarConexion()
-        {
-            Servidor.Desconectar();
-        }                          
+
         #region Tablero 
         public int Columnas { get; set; } = 10;
         public int Renglones { get; set; } = 10;
@@ -44,34 +40,18 @@ namespace PollitosClienteU1.ViewModels
             {
                 // Limpiar el corral antes de actualizarlo
                 Corral.Pollos.Clear();
-
                 // Inicializar el corral con espacios vacíos (null)
                 for (int i = 0; i < Tamaño; i++)
                 {
                     Corral.Pollos.Add(null);
                 }
-                //Si el cliente actual esta en la lista
-                if(lista.Find(x => x.Cliente == Servidor.ObtenerIP()) != null)
+                // Agregar los nuevos pollitos al corral
+                foreach (var pollito in lista)
                 {
-
-                    // Agregar los nuevos pollitos al corral
-                    foreach (var pollito in lista)
+                    if (pollito.Posicion >= 0 && pollito.Posicion < Tamaño)
                     {
-                        if (pollito.Posicion >= 0 && pollito.Posicion < Tamaño)
-                        {
-                            Corral.Pollos[pollito.Posicion] = pollito;
-                        }
+                        Corral.Pollos[pollito.Posicion] = pollito;
                     }
-                }
-                //Si no esta en la lista
-                else
-                {
-                    //Desconectamos el cliente
-                    Servidor.Desconectar();
-
-                    //Actualizamos la vista
-                    IsConnected = false;
-                    OnPropertyChanged(nameof(IsConnected));
                 }
             });
         }
@@ -97,7 +77,8 @@ namespace PollitosClienteU1.ViewModels
                 }
                 //Si esta conectado enviamos un pollito
                 if (Servidor.IsConnected())
-                {                 
+                {
+                    IsConnected = true;
                     //Crear un pollito para enviarlo por primera vez
                     Pollito = new PollitoDTO()
                     {
@@ -109,9 +90,7 @@ namespace PollitosClienteU1.ViewModels
                         Imagen = "🐥"
                     };
                     Servidor.EnviarPollito(Pollito);
-                    IsConnected = true;
                 }
-
                 OnPropertyChanged(nameof(IsConnected));
             }
             catch (Exception ex)

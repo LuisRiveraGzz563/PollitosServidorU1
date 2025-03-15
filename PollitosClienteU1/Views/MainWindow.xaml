@@ -8,7 +8,6 @@
         xmlns:views="clr-namespace:PollitosClienteU1.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
-        Closed="Window_Closed"
         >
     <Window.DataContext>
         <vm:MainViewModel></vm:MainViewModel>

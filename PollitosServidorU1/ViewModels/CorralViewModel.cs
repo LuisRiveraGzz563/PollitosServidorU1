@@ -70,8 +70,8 @@ namespace PollitosServidorU1.ViewModels
                 else
                 {
                     //Si existen 2 clientes con el mismo nombre
-                    var duplicado = Corral.Pollos.Count(x => x.Nombre == dto.Nombre);
-                    if (duplicado == 1)
+                    var duplicado = Corral.Pollos.Count(x => x != null && x.Nombre == dto.Nombre);
+                    if (duplicado <= 1)
                     {
                         // Verificar si el movimiento es válido
                         if (EsMovimientoValido(dto.Posicion, dto.Direccion))
@@ -81,7 +81,10 @@ namespace PollitosServidorU1.ViewModels
                             // Retransmitir la lista de pollitos
                         }
                     }
-                    Servidor.DesconectarClienteDTO(dto.Cliente);
+                    else
+                    {
+                        Servidor.DesconectarClienteDTO(dto.Cliente);
+                    }
                 }
                 var lista = Corral.Pollos.Where(x => x != null).ToList();
                 //Retransmitir la lista si se ha movido o se agrego un nuevo cliente

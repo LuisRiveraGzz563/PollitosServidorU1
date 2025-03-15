@@ -15,10 +15,11 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Border BorderBrush="Black" BorderThickness="1" Width="50" Height="50" Margin="-2">
-                        <StackPanel HorizontalAlignment="Center">
+                        <StackPanel>
                             <TextBlock FontSize="14" Text="{Binding Nombre}" HorizontalAlignment="Center" />
                             <TextBlock FontSize="10" TextAlignment="Center" Text="{Binding Imagen}" />
-                            <TextBlock x:Name="Puntuacion" HorizontalAlignment="Center" Text="{Binding Puntuacion}" FontWeight="Bold">
+                            <TextBlock x:Name="Puntuacion" HorizontalAlignment="Center" 
+                                    Text="{Binding Puntuacion}" FontWeight="Bold">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
                                         <Style.Triggers>

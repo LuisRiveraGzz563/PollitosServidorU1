@@ -134,7 +134,6 @@ namespace PollitosServidorU1.Services
                 //lo mejor seria tratar de reconectar el cliente,
                 //pero por simplicidad se elimina
                 Clientes.Remove(Cliente); 
-                
             }
         }
 
@@ -143,12 +142,12 @@ namespace PollitosServidorU1.Services
             var clientedto = Clientes.FirstOrDefault(x => x.Client.RemoteEndPoint.ToString() == cliente); 
             if (clientedto != null)
             {
-                //Notificar al viewmokdel para que lo quite de la vista
+                //Notificar al viewmodel para que lo quite de la vista
+                ClienteDesconectado?.Invoke(clientedto.Client.RemoteEndPoint.ToString());
                 clientedto.Close();
                 //lo mejor seria tratar de reconectar el cliente,
                 //pero por simplicidad se elimina
                 Clientes.Remove(clientedto);
-                ClienteDesconectado?.Invoke(clientedto.Client.RemoteEndPoint.ToString());
             }
         }
     }
