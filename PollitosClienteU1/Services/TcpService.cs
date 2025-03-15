@@ -13,7 +13,7 @@ namespace PollitosClienteU1.Services
     public class TcpService
     {
         protected readonly TcpClient tcpClient;
-        public Action<List<PollitoDTO>> PollitoRecibido;
+        public Action<List<PollitoDTO>> ListaRecibida;
         public TcpService()
         {
             tcpClient = new TcpClient();
@@ -57,7 +57,7 @@ namespace PollitosClienteU1.Services
                 if (dto.Cliente == null)
                 {
                     // Asignamos la IP del cliente al objeto PollitoDTO
-                    dto.Cliente = ObtenerIPLocal();
+                    dto.Cliente = ObtenerIP();
                 }
                 // Serializamos el objeto a JSON
                 var json = JsonConvert.SerializeObject(dto);
@@ -90,16 +90,17 @@ namespace PollitosClienteU1.Services
                             var json = Encoding.UTF8.GetString(buffer);
                             try
                             {
-                                // Deserializamos el JSON a un objeto PollitoDTO
+                                // Deserializamos el JSON a un objeto PollitoDTO  
                                 var pollitos = JsonConvert.DeserializeObject<List<PollitoDTO>>(json);
                                 if (pollitos != null)
                                 {
-                                    PollitoRecibido?.Invoke(pollitos);
+                                    ListaRecibida?.Invoke(pollitos);
                                 }
                             }
                             catch (JsonException ex)
                             {
-                                MessageBox.Show($"Error de deserialización: {ex.Message}");
+                                // Log the error and show a message box  
+                                Debug.WriteLine($"Error de deserialización: {ex.Message}");
                             }
                         }
                     }
@@ -127,14 +128,14 @@ namespace PollitosClienteU1.Services
                 // Deserializamos el JSON a una lista de PollitoDTO
                 List<PollitoDTO> lista = JsonConvert.DeserializeObject<List<PollitoDTO>>(json);
                 // Invocamos la acción con la lista recibida
-                PollitoRecibido?.Invoke(lista);
+                ListaRecibida?.Invoke(lista);
             }
             catch (SocketException ex)
             {
                 Debug.WriteLine(ex.Message);
             }
         }
-        public string ObtenerIPLocal()
+        public string ObtenerIP()
         {
             return tcpClient.Client.RemoteEndPoint.ToString();
         }

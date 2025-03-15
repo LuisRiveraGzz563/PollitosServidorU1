@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -24,11 +25,12 @@ namespace PollitosServidorU1.Services
             // Recibimos clientes en un hilo aparte
             Thread recibirClientes = new Thread(RecibirClientes) { IsBackground = true };
             recibirClientes.Start();
+            Thread.Sleep(1000);
         }
-
         private void RecibirClientes()
         {
-            while (Clientes.Count>5)
+            //Limitar la cantidad de usuarios 
+            while (Clientes.Count<=5)
             {
                 // Aceptamos clientes TCP
                 TcpClient tcpClient = listener.AcceptTcpClient();
@@ -40,7 +42,6 @@ namespace PollitosServidorU1.Services
                     IsBackground = true
                 };
                 t.Start(tcpClient);
-                Thread.Sleep(1000);
             }
         }
         private void Escuchar(object tcpClient)
@@ -62,6 +63,7 @@ namespace PollitosServidorU1.Services
                             {
                                 // Deserializamos el JSON a un objeto PollitoDTO
                                 var pollito = JsonConvert.DeserializeObject<PollitoDTO>(json);
+
                                 if (pollito != null)
                                 {
                                     PollitoRecibido?.Invoke(pollito);
@@ -122,16 +124,31 @@ namespace PollitosServidorU1.Services
                 }
             }
         }
-        private void DesconectarCliente(TcpClient Cliente)
+        public void DesconectarCliente(TcpClient Cliente)
         {
             if (Cliente.Client.RemoteEndPoint != null && Cliente.Client.Connected == false)
             {
                 //Notificar al viewmokdel para que lo quite de la vista
+                ClienteDesconectado?.Invoke(Cliente.Client.RemoteEndPoint.ToString());
                 Cliente.Close();
                 //lo mejor seria tratar de reconectar el cliente,
                 //pero por simplicidad se elimina
                 Clientes.Remove(Cliente); 
-                ClienteDesconectado?.Invoke(Cliente.Client.RemoteEndPoint.ToString());
+                
+            }
+        }
+
+        public void DesconectarClienteDTO(string cliente)
+        {
+            var clientedto = Clientes.FirstOrDefault(x => x.Client.RemoteEndPoint.ToString() == cliente); 
+            if (clientedto != null)
+            {
+                //Notificar al viewmokdel para que lo quite de la vista
+                clientedto.Close();
+                //lo mejor seria tratar de reconectar el cliente,
+                //pero por simplicidad se elimina
+                Clientes.Remove(clientedto);
+                ClienteDesconectado?.Invoke(clientedto.Client.RemoteEndPoint.ToString());
             }
         }
     }

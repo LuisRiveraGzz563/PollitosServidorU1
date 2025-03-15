@@ -17,7 +17,7 @@ namespace PollitosClienteU1.Models
         public string Imagen { get; set; }
         [ObservableProperty]
         public int Posicion { get; set; }
-
+        public int Duracion { get; set; } = 5;
         public string Cliente { get; set; }
         public int Direccion { get; set; }
     }

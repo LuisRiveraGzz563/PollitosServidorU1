@@ -27,7 +27,7 @@ namespace PollitosClienteU1.ViewModels
         {
             Corral = new Corral(Tamaño);
             ConectarCommand = new RelayCommand(Conectar);
-            Servidor.PollitoRecibido += Servidor_ListaRecibida;
+            Servidor.ListaRecibida += Servidor_ListaRecibida;
         }
         public void CerrarConexion()
         {
@@ -50,18 +50,28 @@ namespace PollitosClienteU1.ViewModels
                 {
                     Corral.Pollos.Add(null);
                 }
-
-                // Agregar los nuevos pollitos al corral
-                foreach (var pollito in lista)
+                //Si el cliente actual esta en la lista
+                if(lista.Find(x => x.Cliente == Servidor.ObtenerIP()) != null)
                 {
-                    if(pollito.Cliente == Servidor.ObtenerIPLocal())
+
+                    // Agregar los nuevos pollitos al corral
+                    foreach (var pollito in lista)
                     {
-                        Pollito.Posicion = pollito.Posicion;
+                        if (pollito.Posicion >= 0 && pollito.Posicion < Tamaño)
+                        {
+                            Corral.Pollos[pollito.Posicion] = pollito;
+                        }
                     }
-                    if (pollito.Posicion >= 0 && pollito.Posicion < Tamaño)
-                    {
-                        Corral.Pollos[pollito.Posicion] = pollito;
-                    }
+                }
+                //Si no esta en la lista
+                else
+                {
+                    //Desconectamos el cliente
+                    Servidor.Desconectar();
+
+                    //Actualizamos la vista
+                    IsConnected = false;
+                    OnPropertyChanged(nameof(IsConnected));
                 }
             });
         }
@@ -78,14 +88,16 @@ namespace PollitosClienteU1.ViewModels
         {
             try
             {
-                //Llamamos al metodo Conectar del servicio TcpService
-                Servidor.Conectar(Conexion.IP);
-
                 //Verificamos si el cliente esta conectado
                 IsConnected = Servidor.IsConnected();
-                //Si esta conectado enviamos un pollito
-                if (IsConnected)
+                if (!IsConnected)
                 {
+                    //Llamamos al metodo Conectar del servicio TcpService
+                    Servidor.Conectar(Conexion.IP);
+                }
+                //Si esta conectado enviamos un pollito
+                if (Servidor.IsConnected())
+                {                 
                     //Crear un pollito para enviarlo por primera vez
                     Pollito = new PollitoDTO()
                     {
@@ -93,12 +105,13 @@ namespace PollitosClienteU1.ViewModels
                         Posicion = 0,
                         Puntuacion = 0,
                         Direccion = 0,
+                        Duracion = 5,
                         Imagen = "🐥"
                     };
-
                     Servidor.EnviarPollito(Pollito);
-
+                    IsConnected = true;
                 }
+
                 OnPropertyChanged(nameof(IsConnected));
             }
             catch (Exception ex)

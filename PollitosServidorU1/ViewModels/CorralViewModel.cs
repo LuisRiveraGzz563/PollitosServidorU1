@@ -11,53 +11,30 @@ namespace PollitosServidorU1.ViewModels
 {
     public class CorralViewModel : ObservableObject
     {
-        #region Propiedades
+        #region Propiedades,servicios y Corral
         private readonly string[] Images = new string[2] { "🐥", "🌽" };
-
         public int Columnas { get; set; } = 10;
         public int Renglones { get; set; } = 10;
         public int NumMaiz { get; set; } = 5;
         public int TamañoCorral => Columnas * Renglones;
         public Corral Corral { get; set; }
         private static readonly TcpServidor Servidor = new TcpServidor();
-        private readonly Random r = new Random();
-        #endregion
-
+        private readonly Random r = new Random(); 
         private readonly Timer Contador;
+        #endregion
         public CorralViewModel()
         {
             Corral = new Corral(TamañoCorral);
+            //Metodo para Generar una cantidad fija de Maiz
             GenerarMaiz();
-
             // Suscribir al evento de recepción de pollitos
             Servidor.PollitoRecibido += Servidor_PollitoRecibido;
             Servidor.ClienteDesconectado += Servidor_ClienteDesconectado;
             // Inicializar el temporizador para eliminar pollitos cada 5 segundos
-            Contador = new Timer(EliminarMaiz, null, 1000, 1000);
+            Contador = new Timer(EliminarMaiz,null, 1000, 1000);
         }
 
-        private void EliminarMaiz(object state)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                // Lista de Maiz
-                var lista = Corral.Pollos.Where(x => x!=null && x.Imagen == Images[1]).ToList();
-                foreach (var maiz in lista)
-                {
-                    if(maiz.Duracion == 0)
-                    {
-                        //Eliminar Maiz
-                        Corral.Pollos[maiz.Posicion] = null;
-                        //Generar uno nuevo
-                        GenerarNuevoMaiz();
-                    }
-                    else
-                    {
-                        maiz.Duracion--;
-                    }
-                }
-            });
-        }
+        #region Eventos
         private void Servidor_ClienteDesconectado(string cliente)
         {
             var pollo = Corral.Pollos.FirstOrDefault(x => x != null && x.Cliente == cliente);
@@ -92,19 +69,27 @@ namespace PollitosServidorU1.ViewModels
                 // Si esta: moverlo
                 else
                 {
-                    // Verificar si el movimiento es válido
-                    if (EsMovimientoValido(dto.Posicion, dto.Direccion))
+                    //Si existen 2 clientes con el mismo nombre
+                    var duplicado = Corral.Pollos.Count(x => x.Nombre == dto.Nombre);
+                    if (duplicado == 1)
                     {
-                        // Mover el pollito
-                        MoverPollito(dto.Posicion, dto.Direccion);
-                        // Retransmitir la lista de pollitos
+                        // Verificar si el movimiento es válido
+                        if (EsMovimientoValido(dto.Posicion, dto.Direccion))
+                        {
+                            // Mover el pollito
+                            MoverPollito(dto.Posicion, dto.Direccion);
+                            // Retransmitir la lista de pollitos
+                        }
                     }
+                    Servidor.DesconectarClienteDTO(dto.Cliente);
                 }
                 var lista = Corral.Pollos.Where(x => x != null).ToList();
                 //Retransmitir la lista si se ha movido o se agrego un nuevo cliente
                 Servidor.RetransmitirLista(lista);
             });
         }
+        #endregion
+        #region Movimiento
         //Verificar si el movimiento es válido
         private bool EsMovimientoValido(int posicion, int direccion)
         {
@@ -169,17 +154,18 @@ namespace PollitosServidorU1.ViewModels
                 GenerarNuevoMaiz();
             }
         }
+        #endregion
+        #region Generacion y Eliminacion de Maiz
         // Metodo para manejar la cantidad de maiz generado
         private void GenerarMaiz()
         {
             // Modificar NumMaiz para cambiar la cantidad de maiz generado en pantalla
             for (int i = 0; i < NumMaiz; i++)
             {
-                // Generar un nuevo maíz
+                //Metodo para generar un nuevo maíz
                 GenerarNuevoMaiz();
             }
         }
-
         //Metodo para generar un nuevo maiz
         private void GenerarNuevoMaiz()
         {
@@ -196,5 +182,35 @@ namespace PollitosServidorU1.ViewModels
                 Posicion = nuevaPosicion
             };
         }
+        //no es necesario recibir nada, pero el objeto state es necesario para la instanciacion del timer
+        private void EliminarMaiz(object state)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // Lista de Maiz
+                var lista = Corral.Pollos.Where(x => x != null && x.Imagen == Images[1]).ToList();
+                //Recorrer la lista de Maiz
+                foreach (var maiz in lista)
+                {
+                    //Si la duracion es 0
+                    if (maiz.Duracion == 0)
+                    {
+                        //Eliminar Maiz
+                        Corral.Pollos[maiz.Posicion] = null;
+                        //Generar uno nuevo
+                        GenerarNuevoMaiz();
+                    }
+                    else
+                    {
+                        //Reducir la Duracion del maiz en 1
+                        maiz.Duracion--;
+                    }
+                }
+
+                var listaActualizada = Corral.Pollos.Where(x => x != null).ToList();
+                Servidor.RetransmitirLista(listaActualizada);
+            });
+        }
+        #endregion
     }
 }
