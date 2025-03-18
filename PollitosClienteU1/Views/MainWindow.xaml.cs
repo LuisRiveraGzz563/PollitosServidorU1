@@ -1,6 +1,8 @@
 ﻿using PollitosClienteU1.ViewModels;
 using System;
+using System.Threading;
 using System.Windows;
+using System.Windows.Input;
 
 namespace PollitosClienteU1
 {
@@ -12,6 +14,31 @@ namespace PollitosClienteU1
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (DataContext is MainViewModel vm && vm.IsConnected)
+            {
+                //Movimiento de pollito (Arriba,Abajo,Izquierda y derecha)
+                //Tambien puedes utilizar (W,A,S,D)
+                if (e.Key == Key.Up || e.Key == Key.W)
+                {
+                    vm.EnviarMovimiento(1);
+                }
+                if (e.Key == Key.Down || e.Key == Key.S)
+                {
+                    vm.EnviarMovimiento(2);
+                }
+                if (e.Key == Key.Left || e.Key == Key.A)
+                {
+                    vm.EnviarMovimiento(3);
+                }
+                if (e.Key == Key.Right || e.Key == Key.D)
+                {
+                    vm.EnviarMovimiento(4);
+                }
+            }
         }
     }
 }

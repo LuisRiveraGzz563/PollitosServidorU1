@@ -39,18 +39,20 @@ namespace PollitosClienteU1.ViewModels
             {
                 // Limpiar el corral antes de actualizarlo
                 Corral.Pollos.Clear();
-
                 // Inicializar el corral con espacios vacíos (null)
                 for (int i = 0; i < Tamaño; i++)
                 {
                     Corral.Pollos.Add(null);
                 }
-
                 // Agregar los pollitos al corral
                 foreach (var pollito in lista)
                 {
                     if (pollito.Posicion >= 0 && pollito.Posicion < Tamaño)
                     {
+                        if(pollito.Cliente == Pollito.Cliente)
+                        {
+                            Pollito.Posicion = pollito.Posicion;
+                        }
                         Corral.Pollos[pollito.Posicion] = pollito;
                     }
                 }
@@ -111,6 +113,7 @@ namespace PollitosClienteU1.ViewModels
             //Asignar la direccion al pollito
             Pollito.Direccion = num;
             Servidor.EnviarPollito(Pollito);
+
         }
         #endregion
     }
