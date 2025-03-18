@@ -86,8 +86,9 @@ namespace PollitosServidorU1.ViewModels
                     }
                 }
                 var lista = Corral.Pollos.Where(x => x != null).ToList();
-                
+
                 //Retransmitir la lista si se ha movido o se agrego un nuevo cliente
+                //Al retransmitir la lista, tarda un poco en actualizar la lista en el cliente
                 Servidor.RetransmitirLista(lista);
             });
         }
