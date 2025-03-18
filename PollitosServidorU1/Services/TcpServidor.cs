@@ -85,14 +85,18 @@ namespace PollitosServidorU1.Services
         public void Retransmitir(PollitoDTO pollo)
         {
             // Serializar el objeto
-            byte[] buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(pollo));
+            var json = JsonConvert.SerializeObject(pollo);
+            // Convertir en byte[]
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
             // Recorremos la lista de clientes
             foreach (var c in Clientes)
             {
                 try
                 {
+                    //Si el cliente esta conectado
                     if (c.Connected)
                     {
+                        //Enviamos el pollito
                         c.Client.Send(buffer);
                     }
                 }
@@ -105,8 +109,13 @@ namespace PollitosServidorU1.Services
         //Metodo para enviar la lista de pollitos a los clientes
         public void RetransmitirLista(List<PollitoDTO> lista)
         {
-            byte[] buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(lista));
+            //Serializacion de la lista
+            var json = JsonConvert.SerializeObject(lista);
+            //Conversion a byte[]
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
+            //Contador de clientes
             var count = Clientes.Count;
+            //si hay clientes
             if (count>0)
             {
                 // Recorremos la lista de clientes
@@ -114,13 +123,16 @@ namespace PollitosServidorU1.Services
                 {
                     try
                     {
+                        //si esta conectado
                         if (c.Connected)
                         {
+                            //Enviamos la lista 
                             c.Client.Send(buffer);
                         }
                     }
                     catch (Exception)
                     {
+                        //Desconectamos el cliente
                         DesconectarCliente(c.Client.RemoteEndPoint.ToString());
                     }
                 }
@@ -128,14 +140,17 @@ namespace PollitosServidorU1.Services
         }
         public void DesconectarCliente(string cliente)
         {
-            var c = Clientes.FirstOrDefault(x => x.Client.RemoteEndPoint.ToString() == cliente); 
+            //Obtenemos el cliente
+            var c = Clientes.FirstOrDefault(x => x.Client.RemoteEndPoint.ToString()
+                                                 == cliente); 
+            //Si existe
             if (c != null)
             {
                 //Notificar al viewmodel para que lo quite de la vista
                 ClienteDesconectado?.Invoke(c.Client.RemoteEndPoint.ToString());
+                //Cerrar conexion del cliente
                 c.Close();
-                //lo mejor seria tratar de reconectar el cliente,
-                //pero por simplicidad se elimina
+                //Eliminar el cliente de la lista
                 Clientes.Remove(c);
             }
         }

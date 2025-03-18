@@ -49,6 +49,7 @@ namespace PollitosServidorU1.ViewModels
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
+                bool listaMoficiada = false;
                 //1.- Verificar si la persona esta en el tablero
                 var polloEnTablero = Corral.Pollos.
                     FirstOrDefault(x => x != null && x.Nombre == dto.Nombre);
@@ -62,6 +63,7 @@ namespace PollitosServidorU1.ViewModels
                         {
                             //Agregar el pollito al tablero
                             Corral.Pollos[i] = dto;
+                            listaMoficiada = true;
                             break;
                         }
                     }
@@ -77,7 +79,7 @@ namespace PollitosServidorU1.ViewModels
                         {
                             // Mover el pollito
                             MoverPollito(dto.Posicion, dto.Direccion);
-                            // Retransmitir la lista de pollitos
+                            listaMoficiada = true;
                         }
                     }
                     else
@@ -85,11 +87,15 @@ namespace PollitosServidorU1.ViewModels
                         Servidor.DesconectarCliente(dto.Cliente);
                     }
                 }
-                var lista = Corral.Pollos.Where(x => x != null).ToList();
 
-                //Retransmitir la lista si se ha movido o se agrego un nuevo cliente
-                //Al retransmitir la lista, tarda un poco en actualizar la lista en el cliente
-                Servidor.RetransmitirLista(lista);
+                if (listaMoficiada)
+                {
+                    // Retransmitir la lista de pollitos
+                    var lista = Corral.Pollos.Where(x => x != null).ToList();
+                    //Retransmitir la lista si se ha movido o se agrego un nuevo cliente
+                    //Al retransmitir la lista, tarda un poco en actualizar la lista en el cliente
+                    Servidor.RetransmitirLista(lista);
+                }
             });
         }
         #endregion
