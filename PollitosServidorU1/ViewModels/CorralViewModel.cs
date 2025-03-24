@@ -83,44 +83,79 @@ namespace PollitosServidorU1.ViewModels
         }
         private bool EsMovimientoValido(int posicion, int direccion)
         {
+            int nuevaPosicion = posicion;
+
             switch (direccion)
             {
+                //Arriba
                 case 1:
-                    return posicion >= Columnas;
+                    nuevaPosicion = posicion >= 0 ? posicion - Columnas : posicion;
+                    break;
+                //Abajo
                 case 2:
-                    return posicion < Columnas * (Renglones - 1);
+                    nuevaPosicion = posicion < (TamañoCorral - Columnas) ? posicion + Columnas : posicion;
+                    break;
+                //Izquierda
                 case 3:
-                    return posicion % Columnas != 0;
+                    nuevaPosicion = posicion % Columnas != 0 ? posicion - 1 : posicion;
+                    break;
+                //Derecha
                 case 4:
-                    return (posicion + 1) % Columnas != 0;
+                    nuevaPosicion = posicion % Columnas != (Columnas - 1) ? posicion + 1 : posicion;
+                    break;
+                //Ninguna
                 default:
-                    return false;
+                    nuevaPosicion = posicion;
+                    break;
             }
+
+            if (nuevaPosicion >= 0)
+            {
+                // Obtener el pollo en la nueva posicion
+                var pollo = Corral.Pollos[nuevaPosicion];
+
+                //si en la nueva posicion no hay un pollo en esa posicion o si hay un maiz
+                if ((pollo == null) || pollo != null && pollo.Imagen == Images[1])
+                {
+                    // Es movimiento valido
+                    return true;
+                }
+            }    // No es movimiento valido
+            return false;
+
         }
         public void MoverPollito(int posicion, int direccion)
         {
             if (Corral.Pollos[posicion] == null) return;
 
-            int nuevaPosicion;
+            int nuevaPosicion = posicion;
+
             switch (direccion)
             {
+                //Arriba
                 case 1:
                     nuevaPosicion = posicion >= Columnas ? posicion - Columnas : posicion;
                     break;
+                //Abajo
                 case 2:
                     nuevaPosicion = posicion < (TamañoCorral - Columnas) ? posicion + Columnas : posicion;
                     break;
+                //Izquierda
                 case 3:
                     nuevaPosicion = posicion % Columnas != 0 ? posicion - 1 : posicion;
                     break;
+                //Derecha
                 case 4:
                     nuevaPosicion = posicion % Columnas != (Columnas - 1) ? posicion + 1 : posicion;
                     break;
+                //Ninguna
                 default:
                     nuevaPosicion = posicion;
                     break;
             }
+
             if (nuevaPosicion == posicion) return;
+
             if (Corral.Pollos[nuevaPosicion] != null && Corral.Pollos[nuevaPosicion].Imagen == "🌽")
             {
                 Corral.Pollos[posicion].Puntuacion++;

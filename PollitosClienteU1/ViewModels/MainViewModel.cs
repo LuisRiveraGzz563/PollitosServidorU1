@@ -39,12 +39,26 @@ namespace PollitosClienteU1.ViewModels
             ConectarCommand = new RelayCommand(Conectar);
             _servidor.PollitoRecibido += Cliente_PollitoRecibido;
             _servidor.MaizRecibido += Cliente_MaizRecibido;
-            _contador = new Timer(EliminarMaiz, null, 1000, 1000);
         }
         private void Cliente_MaizRecibido(List<PollitoDTO> list)
         {
             Application.Current?.Dispatcher?.Invoke(() =>
             {
+                //Recorrer el tablero
+                for (int i = 0; i < Corral.Pollos.Count; i++)
+                {
+                    //Buscar objetos
+                    if (Corral.Pollos[i] != null)
+                    {
+                        //Si es un maiz o un cliente que no sea el actual
+                        if (Corral.Pollos[i].Imagen == _images[1] || Corral.Pollos[i].Cliente != Pollito.Cliente)
+                        {
+                            //Borrar de la pantalla
+                            Corral.Pollos[i] = null;
+                        }
+                    }
+                }
+                //Colocar en su nueva posicion
                 foreach (var pollito in list)
                 {
                     Corral.Pollos[pollito.Posicion] = pollito;
@@ -60,40 +74,70 @@ namespace PollitosClienteU1.ViewModels
                 {
                     ManejarNuevoPollito(dto);
                 }
-                else if (dto.Direccion > 0 && dto.Direccion < 5 && EsMovimientoValido(dto.Posicion, dto.Direccion, Columnas, Tamaño))
+                else if (dto.Direccion > 0 && dto.Direccion < 5 && EsMovimientoValido(dto.Posicion, dto.Direccion))
                 {
                     //Si el cliente esta sincronizado con el servidor
-                    if (polloEnTablero.Posicion == dto.Posicion)
-                    {
-                        MoverPollito(polloEnTablero.Posicion, dto.Direccion);
-                    }
+                    //if (polloEnTablero.Posicion != dto.Posicion)
+                    //{
+                    //    MoverPollito(polloEnTablero.Posicion, dto.Direccion);
+                    //}
                     //Si el cliente no esta sincronizado con el servidor
-                    else
+                    //else
+                    //{
+                    Corral.Pollos[dto.Posicion] = polloEnTablero;
+                    Corral.Pollos[polloEnTablero.Posicion] = null;
+                    polloEnTablero.Posicion = dto.Posicion;
+                    polloEnTablero.Puntuacion = dto.Puntuacion;
+                    Pollito.Posicion = dto.Posicion;
+                    if (Corral.Pollos[dto.Posicion] != null && Corral.Pollos[dto.Posicion].Imagen == _images[1])
                     {
+                        polloEnTablero.Puntuacion++;
 
-                        Corral.Pollos[dto.Posicion] = polloEnTablero;
-                        Corral.Pollos[polloEnTablero.Posicion] = null;
-                        polloEnTablero.Posicion = dto.Posicion;
-                        polloEnTablero.Puntuacion = dto.Puntuacion;
                     }
+                    //}
                 }
             });
         }
-        private static bool EsMovimientoValido(int posicion, int direccion, int columnas, int tamaño)
+        private bool EsMovimientoValido(int posicion, int direccion)
         {
+            int nuevaPosicion = posicion;
+
             switch (direccion)
             {
+                //Arriba
                 case 1:
-                    return posicion >= columnas;
+                    nuevaPosicion = posicion >= Columnas ? posicion - Columnas : posicion;
+                    break;
+                //Abajo
                 case 2:
-                    return posicion < tamaño - columnas;
+                    nuevaPosicion = posicion < (Tamaño - Columnas) ? posicion + Columnas : posicion;
+                    break;
+                //Izquierda
                 case 3:
-                    return posicion % columnas != 0;
+                    nuevaPosicion = posicion % Columnas != 0 ? posicion - 1 : posicion;
+                    break;
+                //Derecha
                 case 4:
-                    return (posicion + 1) % columnas != 0;
+                    nuevaPosicion = posicion % Columnas != (Columnas - 1) ? posicion + 1 : posicion;
+                    break;
+                //Ninguna
                 default:
-                    return false;
+                    nuevaPosicion = posicion;
+                    break;
             }
+
+            if (nuevaPosicion >= 0)
+            {
+                // Obtener el pollo en la nueva posicion
+                var pollo = Corral.Pollos[nuevaPosicion];
+                //si en la nueva posicion no hay un pollo en esa posicion o si hay un maiz
+                if ((pollo == null) || pollo != null && pollo.Imagen == _images[1])
+                {
+                    // Es movimiento valido
+                    return true;
+                }
+            }    // No es movimiento valido
+            return false;
         }
         private void ManejarNuevoPollito(PollitoDTO dto)
         {
@@ -211,30 +255,12 @@ namespace PollitosClienteU1.ViewModels
         {
             if (_servidor.IsConnected())
             {
-                Pollito.Direccion = num;
-                _servidor.EnviarPollito(Pollito);
-            }
-        }
-        private void EliminarMaiz(object state)
-        {
-            Application.Current?.Dispatcher?.Invoke(() =>
-            {
-                var maizParaEliminar = Corral.Pollos
-                    .Where(x => x != null && x.Imagen == _images[1])
-                    .ToList();
-
-                foreach (var maiz in maizParaEliminar)
+                if (EsMovimientoValido(Pollito.Posicion, num))
                 {
-                    if (maiz.Duracion == 0)
-                    {
-                        Corral.Pollos[maiz.Posicion] = null;
-                    }
-                    else
-                    {
-                        maiz.Duracion--;
-                    }
+                    Pollito.Direccion = num;
+                    _servidor.EnviarPollito(Pollito);
                 }
-            });
+            }
         }
     }
 }
