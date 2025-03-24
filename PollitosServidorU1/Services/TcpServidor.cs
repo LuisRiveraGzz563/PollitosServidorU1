@@ -16,37 +16,28 @@ namespace PollitosServidorU1.Services
         private readonly TcpListener listener;
         public event Action<PollitoDTO> PollitoRecibido;
         public event Action<string> ClienteDesconectado;
+
         public TcpServidor()
         {
-            // Inicializamos el objeto listener con la IP Any y el puerto 5000
             listener = new TcpListener(IPAddress.Any, 5000);
             listener.Start();
-            // Recibimos clientes en un hilo aparte
             Thread recibirClientes = new Thread(RecibirClientes) { IsBackground = true };
             recibirClientes.Start();
         }
         private void RecibirClientes()
         {
-            //Limitar la cantidad de usuarios 
-            while (Clientes.Count<=5)
+            while (Clientes.Count <= 5)
             {
-                // Aceptamos clientes TCP
                 TcpClient tcpClient = listener.AcceptTcpClient();
-                // Agregamos el cliente a la lista de clientes
                 Clientes.Add(tcpClient);
-                // Creamos un hilo para escuchar a los clientes
-                Thread t = new Thread(Escuchar)
-                {
-                    IsBackground = true
-                };
+                Thread t = new Thread(Escuchar) { IsBackground = true };
                 t.Start(tcpClient);
             }
         }
         private void Escuchar(object tcpClient)
         {
-            if (tcpClient != null)
+            if (tcpClient is TcpClient client)
             {
-                var client = (TcpClient)tcpClient;
                 var stream = client.GetStream();
                 try
                 {
@@ -59,9 +50,7 @@ namespace PollitosServidorU1.Services
                             var json = Encoding.UTF8.GetString(buffer);
                             try
                             {
-                                // Deserializamos el JSON a un objeto PollitoDTO
                                 var pollito = JsonConvert.DeserializeObject<PollitoDTO>(json);
-
                                 if (pollito != null)
                                 {
                                     PollitoRecibido?.Invoke(pollito);
@@ -81,22 +70,37 @@ namespace PollitosServidorU1.Services
             }
         }
 
-        //Metodo para enviar la lista de pollitos a los clientes
-        public void Retransmitir(PollitoDTO pollo)
+        public void Retransmitir(object pollito)
         {
-            // Serializar el objeto
-            var json = JsonConvert.SerializeObject(pollo);
-            // Convertir en byte[]
+            var json = JsonConvert.SerializeObject(pollito);
             byte[] buffer = Encoding.UTF8.GetBytes(json);
-            // Recorremos la lista de clientes
-            foreach (var c in Clientes)
+
+            foreach (var c in Clientes.ToList())
             {
                 try
                 {
-                    //Si el cliente esta conectado
                     if (c.Connected)
                     {
-                        //Enviamos el pollito
+                        c.Client.Send(buffer);
+                    }
+                }
+                catch (Exception)
+                {
+                    DesconectarCliente(c.Client.RemoteEndPoint.ToString());
+                }
+            }
+        }  
+        public void Retransmitir(object pollito, string cliente = null)
+        {
+            var json = JsonConvert.SerializeObject(pollito);
+            byte[] buffer = Encoding.UTF8.GetBytes(json);
+
+            foreach (var c in Clientes.ToList())
+            {
+                try
+                {
+                    if (c.Connected && c.Client.RemoteEndPoint.ToString() == cliente)
+                    {
                         c.Client.Send(buffer);
                     }
                 }
@@ -106,51 +110,14 @@ namespace PollitosServidorU1.Services
                 }
             }
         }
-        //Metodo para enviar la lista de pollitos a los clientes
-        public void RetransmitirLista(List<PollitoDTO> lista)
-        {
-            //Serializacion de la lista
-            var json = JsonConvert.SerializeObject(lista);
-            //Conversion a byte[]
-            byte[] buffer = Encoding.UTF8.GetBytes(json);
-            //Contador de clientes
-            var count = Clientes.Count;
-            //si hay clientes
-            if (count>0)
-            {
-                // Recorremos la lista de clientes
-                foreach (var c in Clientes.ToList())
-                {
-                    try
-                    {
-                        //si esta conectado
-                        if (c.Connected)
-                        {
-                            //Enviamos la lista 
-                            c.Client.Send(buffer);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //Desconectamos el cliente
-                        DesconectarCliente(c.Client.RemoteEndPoint.ToString());
-                    }
-                }
-            }
-        }
+
         public void DesconectarCliente(string cliente)
         {
-            //Obtenemos el cliente
-            var c = Clientes.FirstOrDefault(x => x.Client.RemoteEndPoint.ToString()
-                                                 == cliente); 
-            //Si existe
+            var c = Clientes.FirstOrDefault(x => x.Client.RemoteEndPoint.ToString() == cliente);
             if (c != null)
             {
-                //Notificar al viewmodel para que lo quite de la vista
-                ClienteDesconectado?.Invoke(c.Client.RemoteEndPoint.ToString());
-                //Cerrar conexion del cliente
+                ClienteDesconectado?.Invoke(cliente);
                 c.Close();
-                //Eliminar el cliente de la lista
                 Clientes.Remove(c);
             }
         }

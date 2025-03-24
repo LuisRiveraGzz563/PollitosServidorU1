@@ -1,6 +1,4 @@
 ﻿using PollitosClienteU1.ViewModels;
-using System;
-using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 
@@ -16,7 +14,7 @@ namespace PollitosClienteU1
             InitializeComponent();
         }
 
-        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.IsConnected)
             {
