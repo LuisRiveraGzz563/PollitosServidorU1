@@ -6,8 +6,25 @@
              xmlns:local="clr-namespace:PollitosClienteU1.Views"
              xmlns:models="clr-namespace:PollitosClienteU1.Models"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <DockPanel>
+             d:DesignHeight="300" d:DesignWidth="400">
+
+    <Grid Background="Transparent">
+        <!-- Border para darle forma al cuadro -->
+        <Border Background="White" CornerRadius="10" Padding="20"
+                Width="300" HorizontalAlignment="Center" VerticalAlignment="Center"
+                BorderBrush="#FFA726" BorderThickness="2">
+            <StackPanel>
+                <TextBlock Text="Usuario:" FontWeight="Bold" FontFamily="Ink Free" Margin="0,0,0,5" />
+                <TextBox Height="30" Margin="0,0,0,15" />
+
+                <TextBlock Text="Ip del servidor:" FontFamily="Ink Free" FontWeight="Bold" Margin="0,0,0,5" />
+                <PasswordBox Height="30" Margin="0,0,0,20" />
+
+                <Button Content="Entrar" Background="#FFA726" FontFamily="Ink Free" Foreground="White" FontWeight="Bold" Height="35" />
+            </StackPanel>
+        </Border>
+    </Grid>
+    <!--<DockPanel>
         <StackPanel Margin="10" 
                     VerticalAlignment="Center" 
                     HorizontalAlignment="Center"
@@ -39,5 +56,5 @@
                 <Button Content="Conectar" Command="{Binding ConectarCommand}"></Button>
             </Border>
         </StackPanel>
-    </DockPanel>
+    </DockPanel>-->
 </UserControl>
