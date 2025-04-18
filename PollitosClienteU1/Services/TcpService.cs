@@ -33,7 +33,6 @@ namespace PollitosClienteU1.Services
                 MessageBox.Show(ex.Message);
             }
         }
-
         public void Desconectar()
         {
             foreach (var client in tcpClients)
@@ -45,18 +44,15 @@ namespace PollitosClienteU1.Services
             }
             tcpClients.Clear();
         }
-
         public bool IsConnected()
         {
             return tcpClients.Exists(client => client.Connected);
         }
-
         public string ObtenerIP(TcpClient client)
         {
             return client.Client.LocalEndPoint.ToString();
         }
         #endregion
-
         public void EnviarPollito(PollitoDTO dto)
         {
             try
@@ -77,12 +73,10 @@ namespace PollitosClienteU1.Services
                 Desconectar();
             }
         }
-
         private async void Escuchar(TcpClient client)
         {
             if (client == null) return;
             var stream = client.GetStream();
-
             try
             {
                 while (client.Connected)
@@ -98,7 +92,6 @@ namespace PollitosClienteU1.Services
                 Debug.WriteLine(ex.Message);
             }
         }
-
         public async Task RecibirPollitosAsync(TcpClient client)
         {
             try
@@ -114,21 +107,25 @@ namespace PollitosClienteU1.Services
                 Debug.WriteLine(ex.Message);
             }
         }
-
         private void ProcesarJson(string json)
         {
             try
             {
+                // Verificar si el JSON es nulo o vacío
                 var token = JToken.Parse(json);
-
+                //Verificar si es un Array o un Object
                 if (token.Type == JTokenType.Array)
                 {
+                    // Si es un array, lo convertimos a una lista de PollitoDTO
                     var maiz = token.ToObject<List<PollitoDTO>>();
+                    // Si la lista no es nula, la invocamos
                     MaizRecibido?.Invoke(maiz);
                 }
+                // Si es un objeto, lo convertimos a PollitoDTO
                 else if (token.Type == JTokenType.Object)
                 {
                     var pollito = token.ToObject<PollitoDTO>();
+                    // Si el pollito no es nulo, lo invocamos
                     PollitoRecibido?.Invoke(pollito);
                 }
             }

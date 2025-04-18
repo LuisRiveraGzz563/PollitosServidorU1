@@ -16,20 +16,17 @@ namespace PollitosClienteU1.ViewModels
     {
         private readonly TcpService _servidor = new TcpService();
         private readonly string[] _images = { "🐥", "🌽" };
-        private readonly Timer _contador;
         public int Columnas { get; set; } = 10;
         public int Renglones { get; set; } = 10;
         private int Tamaño => Columnas * Renglones;
 
         [ObservableProperty]
         private bool isConnected;
-
         public bool IsConnected
         {
             get => isConnected;
             set => SetProperty(ref isConnected, value);
         }
-
         public ConexionModel Conexion { get; set; } = new ConexionModel();
         public PollitoDTO Pollito { get; set; }
         public Corral Corral { get; } = new Corral(100);
@@ -40,6 +37,7 @@ namespace PollitosClienteU1.ViewModels
             _servidor.PollitoRecibido += Cliente_PollitoRecibido;
             _servidor.MaizRecibido += Cliente_MaizRecibido;
         }
+        //Aqui se recibe el tablero de pollitos y maiz
         private void Cliente_MaizRecibido(List<PollitoDTO> list)
         {
             Application.Current?.Dispatcher?.Invoke(() =>
@@ -84,16 +82,16 @@ namespace PollitosClienteU1.ViewModels
                     //Si el cliente no esta sincronizado con el servidor
                     //else
                     //{
+                    //Aumentar la puntuacion si la posicion a la que se movio el pollito es un maiz
+                    if (Corral.Pollos[dto.Posicion] != null && Corral.Pollos[dto.Posicion].Imagen == _images[1])
+                    {
+                        polloEnTablero.Puntuacion++;
+                    }
                     Corral.Pollos[dto.Posicion] = polloEnTablero;
                     Corral.Pollos[polloEnTablero.Posicion] = null;
                     polloEnTablero.Posicion = dto.Posicion;
                     polloEnTablero.Puntuacion = dto.Puntuacion;
                     Pollito.Posicion = dto.Posicion;
-                    if (Corral.Pollos[dto.Posicion] != null && Corral.Pollos[dto.Posicion].Imagen == _images[1])
-                    {
-                        polloEnTablero.Puntuacion++;
-
-                    }
                     //}
                 }
             });
@@ -227,29 +225,33 @@ namespace PollitosClienteU1.ViewModels
                     MessageBox.Show("Ingrese un Nombre");
                     return;
                 }
-
+                //Si el servidor no esta conectado
                 if (!_servidor.IsConnected())
                 {
+                    //Intentar conectar con el servidor
                     _servidor.Conectar(Conexion.IP);
                 }
-
+                                                      
+                //Si el servidor se conecto
                 if (_servidor.IsConnected())
                 {
+                    //Se envia un nuevo pollito al servidor
                     Pollito = new PollitoDTO { Nombre = Conexion.Nombre, Imagen = "🐥" };
                     _servidor.EnviarPollito(Pollito);
                 }
 
+                //Actualizar propiedes IsConnected
                 IsConnected = _servidor.IsConnected();
+                //Si no se conecto con el servidor
                 if (!IsConnected)
                 {
-                    MessageBox.Show("Ya existe otro usuario con el mismo nombre");
+                    MessageBox.Show("");
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
-
         }
         public void EnviarMovimiento(int num)
         {

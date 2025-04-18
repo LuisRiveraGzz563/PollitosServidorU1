@@ -14,6 +14,7 @@ namespace PollitosClienteU1
             InitializeComponent();
         }
 
+        //Movimiento
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (DataContext is MainViewModel vm && vm.IsConnected)

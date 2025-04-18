@@ -20,7 +20,7 @@
                 <TextBlock Text="Ip del servidor:" FontFamily="Ink Free" FontWeight="Bold" Margin="0,0,0,5" />
                 <TextBox Text="{Binding Conexion.IP}" FontFamily="Ink Free" Height="30" Margin="0,0,0,20" />
 
-                <Button Content="Conectar" Command="{Binding ConectarCommand}" Background="#FFA726" FontFamily="Ink Free" Foreground="White" FontWeight="Bold" Height="35" />
+                <Button Content="Entrar" Background="#FFA726" FontFamily="Ink Free" Foreground="White" FontWeight="Bold" Height="35" />
             </StackPanel>
         </Border>
     </Grid>

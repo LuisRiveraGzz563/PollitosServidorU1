@@ -32,11 +32,18 @@ namespace PollitosServidorU1.ViewModels
         #region Eventos
         private void Servidor_ClienteDesconectado(string cliente)
         {
+            // buscamos el pollito en el corral
             var pollo = Corral.Pollos.FirstOrDefault(x => x != null && x.Cliente == cliente);
+            // si el pollito no es nulo
             if (pollo != null)
             {
+                // eliminamos el pollito del corral
                 Corral.Pollos[pollo.Posicion] = null;
-                Servidor.Retransmitir(Corral.Pollos.Where(x => x != null).ToList());
+                // obtenemos el tablero actualizado
+                var tablero = Corral.Pollos.Where(x => x != null).ToList();
+                // retransmitimos el tablero actualizado a los clientes
+                Servidor.Retransmitir(tablero);
+               
             }
         }
         private void Servidor_PollitoRecibido(PollitoDTO dto)
@@ -201,12 +208,22 @@ namespace PollitosServidorU1.ViewModels
         {
             Application.Current?.Dispatcher?.BeginInvoke(new Action(() =>
             {
+                // obtener todo el maiz
+                var MaizTablero = Corral.Pollos.Where(x => x != null && x.Imagen == Images[1]);
+                                        
+                // reducir su duracion en 1
+                foreach (var maiz in MaizTablero)
+                {
+                    maiz.Duracion--;
+                }
+
+                //Buscar maiz que sera eliminado
                 var maizParaEliminar = Corral.Pollos
                     .Where(x => x != null && x.Imagen == Images[1] && x.Duracion == 0)
                     .ToList();
-
                 foreach (var maiz in maizParaEliminar)
                 {
+                    // Eliminar maiz
                     Corral.Pollos[maiz.Posicion] = null;
                     GenerarNuevoMaiz();
                 }
