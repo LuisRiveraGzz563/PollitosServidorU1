@@ -15,12 +15,12 @@
                 BorderBrush="#FFA726" BorderThickness="2">
             <StackPanel>
                 <TextBlock Text="Usuario:" FontWeight="Bold" FontFamily="Ink Free" Margin="0,0,0,5" />
-                <TextBox Height="30" Margin="0,0,0,15" />
+                <TextBox Text="{Binding Conexion.Nombre}" FontFamily="Ink Free" Height="30" Margin="0,0,0,15" />
 
                 <TextBlock Text="Ip del servidor:" FontFamily="Ink Free" FontWeight="Bold" Margin="0,0,0,5" />
-                <PasswordBox Height="30" Margin="0,0,0,20" />
+                <TextBox Text="{Binding Conexion.IP}" FontFamily="Ink Free" Height="30" Margin="0,0,0,20" />
 
-                <Button Content="Entrar" Background="#FFA726" FontFamily="Ink Free" Foreground="White" FontWeight="Bold" Height="35" />
+                <Button Content="Conectar" Command="{Binding ConectarCommand}" Background="#FFA726" FontFamily="Ink Free" Foreground="White" FontWeight="Bold" Height="35" />
             </StackPanel>
         </Border>
     </Grid>
