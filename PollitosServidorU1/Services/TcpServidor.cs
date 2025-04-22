@@ -95,7 +95,6 @@ namespace PollitosServidorU1.Services
             // Serializamos el objeto a JSON
             var json = JsonConvert.SerializeObject(pollito);
             var buffer = Encoding.UTF8.GetBytes(json);
-
             // Si se especifica un cliente, enviamos solo a ese cliente
             if (!string.IsNullOrWhiteSpace(cliente))
             {
@@ -115,37 +114,40 @@ namespace PollitosServidorU1.Services
                     }
                 }
             }
+            // Si no se especifica cliente, lo enviamos a todos los conectados
             else
             {
-                // Si no se especifica cliente, lo enviamos a todos los conectados
+                // Lista de clientes que no estan conectados
                 var clientesAEliminar = new List<string>();
-
+                //Recorremos la lista de clientes
                 foreach (var c in Clientes.ToList())
                 {
                     try
                     {
+                        // Si el cliente esta conectado
                         if (c.Connected)
                         {
+                            //Enviamos el pollito
                             c.Client.Send(buffer);
                         }
                     }
+                    // Si fallo el envio al cliente 
                     catch
                     {
+                        // se agrega a la lista de clientes a eliminar
                         clientesAEliminar.Add(c.Client.RemoteEndPoint.ToString());
                     }
                 }
-
                 // Desconectamos a los clientes que fallaron
-                foreach (var id in clientesAEliminar)
+                foreach (var ipCliente in clientesAEliminar)
                 {
-                    DesconectarCliente(id);
+                    DesconectarCliente(ipCliente);
                 }
             }
         }
         public void DesconectarCliente(string cliente)
         {
             var c = Clientes.FirstOrDefault(x => x.Client?.RemoteEndPoint?.ToString() == cliente);
-
             if (c != null)
             {
                 try

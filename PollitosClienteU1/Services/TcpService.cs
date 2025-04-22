@@ -14,19 +14,20 @@ namespace PollitosClienteU1.Services
 {
     public class TcpService
     {
-        private readonly List<TcpClient> tcpClients = new List<TcpClient>();
+        private TcpClient tcpClient = new TcpClient();
         public Action<PollitoDTO> PollitoRecibido;
-        public Action<List<PollitoDTO>> MaizRecibido;
 
         #region Metodos de conexion
         public void Conectar(string IP)
         {
             try
             {
-                var client = new TcpClient();
-                client.Connect(IP, 5000);
-                tcpClients.Add(client);
-                Task.Run(() => Escuchar(client));
+                if(tcpClient == null)
+                {
+                    tcpClient = new TcpClient();
+                }
+                tcpClient.Connect(IP, 5000);
+                new Thread(Escuchar) { IsBackground = true }.Start();
             }
             catch (Exception ex)
             {
@@ -35,18 +36,16 @@ namespace PollitosClienteU1.Services
         }
         public void Desconectar()
         {
-            foreach (var client in tcpClients)
+            if (tcpClient.Connected)
             {
-                if (client.Connected)
-                {
-                    client.Close();
-                }
+                tcpClient.Close();
+                tcpClient.Dispose();
+                tcpClient = null;
             }
-            tcpClients.Clear();
         }
         public bool IsConnected()
         {
-            return tcpClients.Exists(client => client.Connected);
+            return tcpClient.Connected;
         }
         public string ObtenerIP(TcpClient client)
         {
@@ -57,33 +56,31 @@ namespace PollitosClienteU1.Services
         {
             try
             {
-                foreach (var client in tcpClients)
+                if (dto.Cliente == null)
                 {
-                    if (dto.Cliente == null)
-                    {
-                        dto.Cliente = ObtenerIP(client);
-                    }
-                    var json = JsonConvert.SerializeObject(dto);
-                    var buffer = Encoding.UTF8.GetBytes(json);
-                    client.GetStream().Write(buffer, 0, buffer.Length);
+                    dto.Cliente = ObtenerIP(tcpClient);
                 }
+                var json = JsonConvert.SerializeObject(dto);
+                var buffer = Encoding.UTF8.GetBytes(json);
+                tcpClient.GetStream().Write(buffer, 0, buffer.Length);
+
             }
             catch (SocketException)
             {
                 Desconectar();
             }
         }
-        private async void Escuchar(TcpClient client)
+        private async void Escuchar()
         {
-            if (client == null) return;
-            var stream = client.GetStream();
+            if (tcpClient == null) return;
+            var stream = tcpClient.GetStream();
             try
             {
-                while (client.Connected)
+                while (tcpClient.Connected)
                 {
                     if (stream.DataAvailable)
                     {
-                        await RecibirPollitosAsync(client);
+                        await RecibirPollitosAsync(tcpClient);
                     }
                 }
             }
@@ -109,17 +106,25 @@ namespace PollitosClienteU1.Services
         }
         private void ProcesarJson(string json)
         {
+
             try
             {
+                ///<summary>
+                ///   se reciben objetos y no un arreglo de objeto como tal, asi que convertimos el json recibido en una lista de objetos
+                /// </summary>
+
+                json = "[" + json.Replace("}{", "},{") + "]";
                 // Verificar si el JSON es nulo o vacío
                 var token = JToken.Parse(json);
                 //Verificar si es un Array o un Object
                 if (token.Type == JTokenType.Array)
                 {
                     // Si es un array, lo convertimos a una lista de PollitoDTO
-                    var maiz = token.ToObject<List<PollitoDTO>>();
-                    // Si la lista no es nula, la invocamos
-                    MaizRecibido?.Invoke(maiz);
+                    var ListaMaiz = token.ToObject<List<PollitoDTO>>();
+                    foreach (var maiz in ListaMaiz)
+                    {
+                        PollitoRecibido?.Invoke(maiz);
+                    }
                 }
                 // Si es un objeto, lo convertimos a PollitoDTO
                 else if (token.Type == JTokenType.Object)

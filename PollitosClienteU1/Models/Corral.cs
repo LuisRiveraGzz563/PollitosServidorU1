@@ -12,8 +12,6 @@ namespace PollitosClienteU1.Models
     {
         [ObservableProperty]
         public ObservableCollection<PollitoDTO> Pollos { get; set; } = new ObservableCollection<PollitoDTO>();
-        [ObservableProperty]
-        public PollitoDTO Pollito { get; set; } = new PollitoDTO();
         public Corral(int TamañoCorral)
         {
             // Inicializar la colección con valores nulos

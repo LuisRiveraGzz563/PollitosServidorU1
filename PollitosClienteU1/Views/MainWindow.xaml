@@ -47,7 +47,7 @@
             <Border Grid.Row="1" Grid.Column="1"
                     Background="#FFFDF6E3"
                     BorderBrush="#FFA726" BorderThickness="3"
-                    CornerRadius="15" Padding="20" Width="350">
+                    CornerRadius="15" Padding="20" Width="600">
                 <ContentControl>
                     <ContentControl.Style>
                         <Style TargetType="ContentControl">
