@@ -3,8 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 using PollitosClienteU1.Models;
 using PollitosClienteU1.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
+using System.Media;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,7 +23,6 @@ namespace PollitosClienteU1.ViewModels
         [ObservableProperty]
 
         private bool isConnected;
-
         public bool IsConnected
         {
             get { return isConnected; }
@@ -33,12 +32,11 @@ namespace PollitosClienteU1.ViewModels
                 OnPropertyChanged(nameof(isConnected));
             }
         }
-
-
         public ConexionModel Conexion { get; set; } = new ConexionModel();
-        // Este pollo es el cliente, cada vez que se cambie la posicion en el servidor se debe actualizar localmente
+        // Este pollito es el cliente, cada vez que se cambie la posicion en el servidor se debe actualizar localmente
         public PollitoDTO Pollito { get; set; }
-
+        private readonly SoundPlayer _sonidoMovimiento = new SoundPlayer("Sonidos/pollito.wav");
+        private readonly SoundPlayer _sonidoComer = new SoundPlayer("Sonidos/Comida.wav");
         // Este es el tablero
         public Corral Corral { get; } = new Corral(100);
         public ICommand ConectarCommand { get; }
@@ -77,30 +75,41 @@ namespace PollitosClienteU1.ViewModels
         {
             Application.Current?.Dispatcher?.Invoke(() =>
             {
-                // Eliminación
-                if (dto.Imagen == null && dto.Posicion >= 0 && dto.Posicion < Corral.Pollos.Count)
+                //Eliminacion de pollito
+                if (dto!=null && dto.Imagen == null && dto.Posicion >= 0 && dto.Posicion < Corral.Pollos.Count)
                 {
                     Corral.Pollos[dto.Posicion] = null;
                     return;
                 }
-
-                // Movimiento o creación
-                var polloActual = Corral.Pollos[dto.Posicion];
-
-                if (polloActual == null || polloActual.Nombre != dto.Nombre)
+                bool esCliente = dto.Cliente == Pollito.Cliente;
+                // Detectar si había maíz en la posición destino (antes de mover)
+                bool comio = Corral.Pollos[dto.Posicion]?.Imagen == "🌽";
+                // Movimiento del pollito propio
+                if (esCliente)
                 {
-                    // Nuevo elemento (maíz o pollito)
+                    int posAnterior = Pollito.Posicion;
+
+                    // Eliminar al pollito de la posición anterior
+                    if (posAnterior >= 0 && posAnterior < Corral.Pollos.Count)
+                        Corral.Pollos[posAnterior] = null;
+
+                    // Colocar en nueva posición
                     Corral.Pollos[dto.Posicion] = dto;
+
+                    // Actualizar datos del pollito
+                    Pollito.Posicion = dto.Posicion;
+                    Pollito.Puntuacion = dto.Puntuacion;
+
+                    // Reproducir sonido según acción
+                    if (comio)
+                        _sonidoComer.Play();
+                    else
+                        _sonidoMovimiento.Play();
                 }
                 else
                 {
-                    // Movimiento del pollito
-                    var posAnterior = Pollito.Posicion;
-                    Corral.Pollos[posAnterior] = null;
+                    // Otro jugador: solo colocar en el tablero
                     Corral.Pollos[dto.Posicion] = dto;
-
-                    Pollito.Posicion = dto.Posicion;
-                    Pollito.Puntuacion = dto.Puntuacion;
                 }
             });
         }
@@ -122,23 +131,6 @@ namespace PollitosClienteU1.ViewModels
                 return pollo == null || pollo.Imagen == _images[1];
             }
             return false;
-        }
-        private void ManejarNuevoPollito(PollitoDTO dto)
-        {
-            if (dto != null)
-            {
-                // si es una eliminacion
-                if (dto.Imagen == null && dto.Posicion > -1 && dto.Posicion < Corral.Pollos.Count)
-                {
-                    Corral.Pollos[dto.Posicion] = null;
-                }
-                // si es un maiz o un pollito
-                else
-                {
-                    Corral.Pollos[dto.Posicion] = dto;
-                    Pollito.Posicion = dto.Posicion;
-                }
-            }
         }
         public void EnviarMovimiento(int direccion)
         {
