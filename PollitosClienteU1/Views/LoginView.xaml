@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:PollitosClienteU1.Views"
              xmlns:models="clr-namespace:PollitosClienteU1.Models"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="400">
+             d:DesignHeight="300" d:DesignWidth="500">
 
     <Grid Background="Transparent">
         <!-- Border para darle forma al cuadro -->
@@ -24,37 +24,4 @@
             </StackPanel>
         </Border>
     </Grid>
-    <!--<DockPanel>
-        <StackPanel Margin="10" 
-                    VerticalAlignment="Center" 
-                    HorizontalAlignment="Center"
-                    Width="auto"
-                    Height="auto">
-            <StackPanel.Resources>
-                <Style TargetType="TextBlock">
-                    <Setter Property="FontSize" Value="13"></Setter>
-                </Style>
-                <Style TargetType="TextBox">
-                    <Setter Property="FontSize" Value="13"/>
-                    <Setter Property="Width" Value="200"/>
-                    <Setter Property="Margin" Value="0,0,0,10"/>
-                </Style>
-                <Style TargetType="Button">
-                    <Setter Property="Width" Value="100"/>
-                    <Setter Property="Height" Value="50"/>
-                    <Setter Property="FontSize" Value="13"/>
-                    <Setter Property="BorderBrush" Value="Black"/>
-                    <Setter Property="BorderThickness" Value="2"/>
-                    <Setter Property="Background" Value="LightGreen"/>
-                </Style>
-            </StackPanel.Resources>
-            <TextBlock Text="Nombre de Usuario:"/>
-            <TextBox Text="{Binding Conexion.Nombre}"></TextBox>
-            <TextBlock Text="IP del servidor:"/>
-            <TextBox Text="{Binding Conexion.IP}"></TextBox>
-            <Border>
-                <Button Content="Conectar" Command="{Binding ConectarCommand}"></Button>
-            </Border>
-        </StackPanel>
-    </DockPanel>-->
 </UserControl>

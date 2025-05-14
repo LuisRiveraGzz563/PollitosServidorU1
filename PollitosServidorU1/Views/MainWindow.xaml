@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:PollitosServidorU1.ViewModels"
         xmlns:models="clr-namespace:PollitosServidorU1.Models" 
         mc:Ignorable="d"
-        Title="MainWindow" Height="700" Width="1250"
+        Title="MainWindow" Height="550" Width="600"
         >
     <Window.DataContext>
         <vm:CorralViewModel></vm:CorralViewModel>
@@ -15,6 +15,7 @@
 
     <DockPanel>
         <TextBlock Text="Corral:" DockPanel.Dock="Top" FontSize="12" TextAlignment="Center" />
+        
         <ItemsControl ItemsSource="{Binding Corral.Pollos}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
@@ -44,9 +45,11 @@
             <!-- Usamos UniformGrid para asegurarnos de que haya 5 pollos por renglón -->
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <UniformGrid Columns="{Binding Renglones}" Rows="{Binding Columnas}"/>
+                    <UniformGrid
+                        Columns="{Binding Renglones}" Rows="{Binding Columnas}"/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
         </ItemsControl>
+   
     </DockPanel>
 </Window>

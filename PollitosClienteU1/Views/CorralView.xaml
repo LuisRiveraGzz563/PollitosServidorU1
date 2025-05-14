@@ -5,67 +5,78 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PollitosClienteU1.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="950" d:DesignWidth="700">
 
-    <DockPanel Background="#FFF9F9F9">
-        <TextBlock Text="🐣 Corral" DockPanel.Dock="Top" 
-                   FontSize="20" FontWeight="ExtraBold" Foreground="#FF9900" 
-                   HorizontalAlignment="Center" Margin="0,10"/>
 
-        <ItemsControl ItemsSource="{Binding Corral.Pollos}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid Columns="{Binding Renglones}" Rows="{Binding Columnas}" Margin="10"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
+    <DockPanel Background="Transparent">
+        
+        
+        
+        <Viewbox Stretch="Uniform" MaxHeight="720" MaxWidth="710">
+            <ItemsControl Height="930" Width="1100" ItemsSource="{Binding Corral.Pollos}" 
+                    >
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid 
+                            Columns="{Binding Renglones}" 
+                                 Rows="{Binding Columnas}"
+                                 Margin="5"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
 
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border BorderBrush="#FFCC66" BorderThickness="2" CornerRadius="10"
-                Background="#FFFDF5" Margin="6" Padding="4">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect ShadowDepth="2" BlurRadius="4" Opacity="0.3" />
-                                    </Setter.Value>
-                                </Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="#FFFFE0"/>
-                                        <Setter Property="Cursor" Value="Hand"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="#FFCC66" 
+                            BorderThickness="2" CornerRadius="10"
+                            Background="#FFFDF5" Margin="6" Padding="4">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect ShadowDepth="2"
+                                                          BlurRadius="4" 
+                                                          Opacity="0.3" />
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#FFFFE0"/>
+                                            <Setter Property="Cursor" Value="Hand"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
 
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <!-- Nombre -->
-                            <TextBlock Text="{Binding Nombre}" FontSize="10" FontWeight="Bold"
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <!-- nombre -->
+                                <TextBlock Text="{Binding Nombre}" FontSize="10" FontWeight="Bold"
                            Foreground="#663300" HorizontalAlignment="Center" />
 
-                            <!-- Emoji o ícono de pollo -->
-                            <TextBlock Text="{Binding Imagen}" FontSize="22"
+                                <!-- Emoji o ícono de pollo -->
+                                <TextBlock Text="{Binding Imagen}" FontSize="22"
                            HorizontalAlignment="Center" Margin="0,4"/>
 
-                            <!-- Puntuasion -->
-                            <TextBlock Text="{Binding Puntuacion}" FontSize="12"
+                                <!-- Puntuasion -->
+                                <TextBlock Text="{Binding Puntuacion}" FontSize="12"
                            FontWeight="SemiBold" Foreground="#336600"
                            HorizontalAlignment="Center">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Puntuacion}" Value="-10">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </StackPanel>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Puntuacion}" Value="-10">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Viewbox>
     </DockPanel>
 </UserControl>
+    
+ 
